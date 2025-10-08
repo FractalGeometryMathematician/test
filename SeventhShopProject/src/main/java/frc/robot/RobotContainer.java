@@ -10,7 +10,7 @@ import frc.robot.commands.TankDriveCommand;
 import frc.robot.subsystems.TankDriveSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
+import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 
@@ -18,10 +18,10 @@ public class RobotContainer {
   
   private final TankDriveSubsystem m_exampleSubsystem = new TankDriveSubsystem();
 
-  private final CommandPS4Controller m_driverController = new CommandPS4Controller(0);
+  private final CommandPS5Controller m_driverController = new CommandPS5Controller(0);
   public double joyConLeft = 0;
   public double joyConRight = 0;
-  // joy Con and PS4 methods copied from previous years tank drive
+  // joy Con and PS5 methods copied from previous years tank drive
 
   
   public RobotContainer() {
