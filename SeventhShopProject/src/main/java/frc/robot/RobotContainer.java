@@ -55,11 +55,10 @@ public class RobotContainer {
    */
   private void configureBindings() {
     m_driveSubsystem.setDefaultCommand(new RunCommand(() -> {
-      this.joyConLeft = m_driverController.getLeftY();
-      this.joyConRight = m_driverController.getRightY();
+      joyConLeft = m_driverController.getLeftY();
+      joyConRight = m_driverController.getRightY();
 
-      m_driveSubsystem.setMotorSpeed(Value.of(joyConLeft), DriveSubsystem.Side.LEFT);
-      m_driveSubsystem.setMotorSpeed(Value.of(joyConRight), DriveSubsystem.Side.RIGHT);
+      m_driveSubsystem.setBothMotors(Value.of(joyConLeft), Value.of(joyConRight));
 
     }, m_driveSubsystem));
   }
