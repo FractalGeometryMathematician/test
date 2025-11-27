@@ -6,8 +6,11 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.subsystems.OuttakeSubsystem;
 
 public class RobotContainer {
+  private final OuttakeSubsystem outtakeSubsystem = new OuttakeSubsystem();
+
   public RobotContainer() {
     configureBindings();
   }

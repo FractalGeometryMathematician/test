@@ -4,6 +4,16 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.RPM;
+
+import com.ctre.phoenix6.signals.ForwardLimitSourceValue;
+
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
+
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
  * numerical or boolean
@@ -21,7 +31,37 @@ public final class Constants {
     public static final int kDriverControllerPort = 0;
   }
 
-  public static final class CANConstants {
-    
+  public static final class OuttakeConstants {
+    // CAN IDs
+    public static final int motorID = 0;
+    public static final int encoderID = 0;
+    public static final int CANdiID = 0;
+
+    public static final ForwardLimitSourceValue limitSwitchPort = ForwardLimitSourceValue.RemoteCANdiS1;
+
+    // PID Constants
+    public static final float pos_kG = 0.0f;
+    public static final float pos_kS = 0.0f;
+    public static final float pos_kP = 0.0f;
+    public static final float pos_kI = 0.0f;
+    public static final float pos_kD = 0.0f;
+
+    public static final float vel_kG = 0.0f;
+    public static final float vel_kS = 0.0f;
+    public static final float vel_kP = 0.0f;
+    public static final float vel_kI = 0.0f;
+    public static final float vel_kD = 0.0f;
+
+    // Positions
+    public static final Angle homeAngle = Degrees.of(-90);
+    public static final Angle topBoxAngle = Degrees.of(20);
+    public static final Angle bottomBoxAngle = Degrees.of(60);
+    public static final Angle lowerLimitAngle = Degrees.of(80);
+
+    public static final Angle encoderMagnetOffset = Degrees.of(3);
+    public static final float mechGearRatio = 8.0f;
+    public static final AngularVelocity approximateMaxSpeed = RPM.of(5000 / mechGearRatio);
+    public static final Current currentLimit = Amps.of(120);
+    public static final AngularVelocity maxSafeSpeed = RPM.of(120);
   }
 }
