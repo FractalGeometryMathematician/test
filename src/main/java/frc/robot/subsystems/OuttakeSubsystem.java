@@ -101,15 +101,17 @@ public class OuttakeSubsystem extends SubsystemBase {
             new SoftwareLimitSwitchConfigs()
                 .withForwardSoftLimitEnable(true)
                 .withReverseSoftLimitEnable(true)
-                .withReverseSoftLimitThreshold(OuttakeConstants.lowerLimitAngle)
-                .withForwardSoftLimitThreshold(OuttakeConstants.homeAngle))
+                .withReverseSoftLimitThreshold(OuttakeConstants.reverseSoftLimitAngle)
+                .withForwardSoftLimitThreshold(OuttakeConstants.forwardSoftLimitAngle))
         .withCurrentLimits(
             new CurrentLimitsConfigs()
                 .withStatorCurrentLimitEnable(true)
                 .withStatorCurrentLimit(OuttakeConstants.currentLimit));
     StatusCode motorConfigStatus = motor.getConfigurator().apply(motorConfig);
 
-    Angle pivotDiscontinuityPoint = ((OuttakeConstants.lowerLimitAngle.plus(OuttakeConstants.homeAngle)).div(2))
+    Angle pivotDiscontinuityPoint = ((OuttakeConstants.reverseSoftLimitAngle
+        .plus(OuttakeConstants.forwardSoftLimitAngle))
+        .div(2))
         .plus(Rotations.of(0.5));
 
     encoderConfig = new CANcoderConfiguration().withMagnetSensor(new MagnetSensorConfigs()
@@ -160,10 +162,10 @@ public class OuttakeSubsystem extends SubsystemBase {
   }
 
   public void setPosition(Angle posAngle) {
-    if (posAngle.gt(OuttakeConstants.homeAngle)) {
-      posAngle = OuttakeConstants.homeAngle;
-    } else if (posAngle.lt(OuttakeConstants.lowerLimitAngle)) {
-      posAngle = OuttakeConstants.lowerLimitAngle;
+    if (posAngle.gt(OuttakeConstants.forwardSoftLimitAngle)) {
+      posAngle = OuttakeConstants.forwardSoftLimitAngle;
+    } else if (posAngle.lt(OuttakeConstants.reverseSoftLimitAngle)) {
+      posAngle = OuttakeConstants.reverseSoftLimitAngle;
     }
     motor.setControl(posRequest.withPosition(posAngle));
   }
@@ -175,7 +177,7 @@ public class OuttakeSubsystem extends SubsystemBase {
   public void setVelocity(AngularVelocity setVelocity) {
     if (getHardStopValue() && setVelocity.in(RPM) < 0) {
       setVelocity = RPM.of(0);
-    } else if (getPosition().gt(OuttakeConstants.homeAngle) && setVelocity.in(RPM) > 0) {
+    } else if (getPosition().gt(OuttakeConstants.forwardSoftLimitAngle) && setVelocity.in(RPM) > 0) {
       setVelocity = RPM.of(0);
     }
 
@@ -185,7 +187,7 @@ public class OuttakeSubsystem extends SubsystemBase {
   public void setVoltage(Voltage setVoltage) {
     if (getHardStopValue() && setVoltage.in(Volts) < 0) {
       setVoltage = Volts.of(0);
-    } else if (getPosition().gt(OuttakeConstants.homeAngle) && setVoltage.in(Volts) > 0) {
+    } else if (getPosition().gt(OuttakeConstants.forwardSoftLimitAngle) && setVoltage.in(Volts) > 0) {
       setVoltage = Volts.of(0);
     }
 
@@ -271,10 +273,10 @@ public class OuttakeSubsystem extends SubsystemBase {
    * public Command JoystickPositionControl(DoubleSupplier joystickInput) {
    * return this.run(() -> {
    * Angle desiredAngle = GRTUtils.mapJoystick(joystickInput.getAsDouble(),
-   * OuttakeConstants.lowerLimitAngle,
+   * OuttakeConstants.reverseSoftLimitAngle,
    * OuttakeConstants.homeAngle);
-   * if (desiredAngle.gt(OuttakeConstants.lowerLimitAngle)) {
-   * desiredAngle = OuttakeConstants.lowerLimitAngle;
+   * if (desiredAngle.gt(OuttakeConstants.reverseSoftLimitAngle)) {
+   * desiredAngle = OuttakeConstants.reverseSoftLimitAngle;
    * }
    * setPosition(desiredAngle);
    * });

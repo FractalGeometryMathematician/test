@@ -56,7 +56,8 @@ public final class Constants {
     public static final Angle homeAngle = Degrees.of(90);
     public static final Angle topBoxAngle = Degrees.of(-20);
     public static final Angle bottomBoxAngle = Degrees.of(-60);
-    public static final Angle lowerLimitAngle = Degrees.of(-80);
+    public static final Angle reverseSoftLimitAngle = Degrees.of(-80);
+    public static final Angle forwardSoftLimitAngle = homeAngle;
 
     // Hardware Constants
     public static final Angle encoderMagnetOffset = Degrees.of(3);
