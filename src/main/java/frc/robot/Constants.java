@@ -8,9 +8,12 @@ import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
+
 import com.ctre.phoenix6.signals.ReverseLimitSourceValue;
 
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 
@@ -29,6 +32,26 @@ import edu.wpi.first.units.measure.Current;
 public final class Constants {
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
+  }
+
+  public static final class DriveConstants {
+    // CAN IDs
+    public static final int leftLeaderID = 0;
+    public static final int leftFollowerID = 0;
+    public static final int rightLeaderID = 0;
+    public static final int rightFollowerID = 0;
+
+    // PID Constants
+    public static final float kP = 0.0f;
+    public static final float kI = 0.0f;
+    public static final float kD = 0.0f;
+    public static final float kV = 0.0f; // V / RPM
+    public static final float kS = 0.0f; // V
+
+    public static final AngularAcceleration maxAcceleration = RotationsPerSecondPerSecond.of(150);
+    public static final double allowedError = 0.0; // lowk idk the units
+
+    public static final Current currentLimit = Amps.of(50);
   }
 
   public static final class OuttakeConstants {
