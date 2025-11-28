@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.RPM;
+import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
 
@@ -26,23 +27,21 @@ import com.ctre.phoenix6.signals.ControlModeValue;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.ForwardLimitValue;
 import com.ctre.phoenix6.signals.GravityTypeValue;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 
-import edu.wpi.first.math.estimator.AngleStatistics;
 import edu.wpi.first.units.CurrentUnit;
 import edu.wpi.first.units.TorqueUnit;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Torque;
 import edu.wpi.first.units.measure.Voltage;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Per;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.GRTUtils;
 import frc.robot.Constants.OuttakeConstants;
 
 public class OuttakeSubsystem extends SubsystemBase {
@@ -90,16 +89,17 @@ public class OuttakeSubsystem extends SubsystemBase {
         .withSlot1(velocityPIDConfigs)
         .withMotorOutput(
             new MotorOutputConfigs()
+                .withInverted(InvertedValue.CounterClockwise_Positive)
                 .withNeutralMode(NeutralModeValue.Brake))
         .withHardwareLimitSwitch(
             new HardwareLimitSwitchConfigs()
-                .withForwardLimitEnable(true)
-                .withForwardLimitSource(OuttakeConstants.limitSwitchPort)
-                .withForwardLimitRemoteSensorID(OuttakeConstants.CANdiID))
+                .withReverseLimitEnable(true)
+                .withReverseLimitSource(OuttakeConstants.limitSwitchPort)
+                .withReverseLimitRemoteSensorID(OuttakeConstants.CANdiID))
         .withSoftwareLimitSwitch(
             new SoftwareLimitSwitchConfigs()
-                .withReverseSoftLimitEnable(true)
-                .withReverseSoftLimitThreshold(OuttakeConstants.homeAngle))
+                .withForwardSoftLimitEnable(true)
+                .withForwardSoftLimitThreshold(OuttakeConstants.homeAngle))
         .withCurrentLimits(
             new CurrentLimitsConfigs()
                 .withStatorCurrentLimitEnable(true)
@@ -139,12 +139,21 @@ public class OuttakeSubsystem extends SubsystemBase {
     return motor.getPosition().getValue();
   }
 
-  public boolean atPosition() {
+  // at pre prescribed position
+  public boolean atSetPosition() {
     if (motor.getControlMode().getValue() != ControlModeValue.PositionTorqueCurrentFOC) {
       return false;
     }
 
-    return Rotations.of(Math.abs(motor.getClosedLoopError().getValue())).lte(OuttakeConstants.acceptablePositionError);
+    return (Rotations.of(Math.abs(motor.getClosedLoopError().getValue())))
+        .lte(OuttakeConstants.acceptablePositionError);
+  }
+
+  // at given position
+  public boolean atPosition(Angle target) {
+    Angle error = target.minus(getPosition());
+    Angle absError = Radians.of(Math.abs(error.in(Radians)));
+    return absError.lte(OuttakeConstants.acceptablePositionError);
   }
 
   public void setPosition(Angle posAngle) {
@@ -156,10 +165,18 @@ public class OuttakeSubsystem extends SubsystemBase {
   }
 
   public void setVelocity(AngularVelocity setVelocity) {
+    if (getHardStopValue() && setVelocity.in(RPM) < 0) {
+      setVelocity = RPM.of(0);
+    }
+
     motor.setControl(velRequest.withVelocity(setVelocity));
   }
 
   public void setVoltage(Voltage setVoltage) {
+    if (getHardStopValue() && setVoltage.in(Volts) < 0) {
+      setVoltage = Volts.of(0);
+    }
+
     motor.setControl(voltageRequest.withOutput(setVoltage));
   }
 
@@ -167,7 +184,7 @@ public class OuttakeSubsystem extends SubsystemBase {
     Command baseCommand = this.runOnce(() -> {
       setPosition(position);
     });
-    Command waitForPosition = Commands.waitUntil(() -> atPosition());
+    Command waitForPosition = Commands.waitUntil(() -> atSetPosition());
 
     if (blocking) {
       return baseCommand.andThen(waitForPosition);
@@ -200,15 +217,53 @@ public class OuttakeSubsystem extends SubsystemBase {
     return goToBottomBox(false);
   }
 
+  private Angle getNextHighestPosition() {
+    // bottom -> top -> home
+    Angle currentPos = getPosition();
+    if (currentPos.lt(OuttakeConstants.bottomBoxAngle) && !atPosition(OuttakeConstants.bottomBoxAngle)) {
+      return OuttakeConstants.bottomBoxAngle;
+    } else if (currentPos.lt(OuttakeConstants.topBoxAngle) && !atPosition(OuttakeConstants.topBoxAngle)) {
+      return OuttakeConstants.topBoxAngle;
+    } else if (currentPos.lt(OuttakeConstants.homeAngle) && !atPosition(OuttakeConstants.homeAngle)) {
+      return OuttakeConstants.homeAngle;
+    } else {
+      return OuttakeConstants.bottomBoxAngle;
+    }
+  }
+
+  private Angle getNextLowestPosition() {
+    // home -> top -> bottom
+    Angle currentPos = getPosition();
+    if (currentPos.gt(OuttakeConstants.homeAngle) && !atPosition(OuttakeConstants.homeAngle)) {
+      return OuttakeConstants.homeAngle;
+    } else if (currentPos.gt(OuttakeConstants.topBoxAngle) && !atPosition(OuttakeConstants.topBoxAngle)) {
+      return OuttakeConstants.topBoxAngle;
+    } else if (currentPos.gt(OuttakeConstants.bottomBoxAngle) && !atPosition(OuttakeConstants.bottomBoxAngle)) {
+      return OuttakeConstants.bottomBoxAngle;
+    } else {
+      return OuttakeConstants.homeAngle;
+    }
+  }
+
+  public Command stepUp() {
+    return this.runOnce(() -> {
+      setPosition(getNextHighestPosition());
+    });
+  }
+
+  public Command stepDown() {
+    return this.runOnce(() -> {
+      setPosition(getNextLowestPosition());
+    });
+  }
+
   public Command VelocityControl(DoubleSupplier negativeInput, DoubleSupplier positiveInput) {
     return this.run(() -> {
       double positiveValue = positiveInput.getAsDouble();
       double negativeValue = negativeInput.getAsDouble();
       double shapedInput = ((positiveValue * positiveValue) - (negativeValue * negativeValue)); // bad name wth
       AngularVelocity desiredSpeed = OuttakeConstants.maxSafeSpeed.times(shapedInput);
-      if (getHardStopValue() && desiredSpeed.in(RPM) > 0) {
-        desiredSpeed = RPM.of(0);
-      }
+
       setVelocity(desiredSpeed);
     });
   }

@@ -8,14 +8,11 @@ import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static edu.wpi.first.units.Units.Seconds;
-
-import com.ctre.phoenix6.signals.ForwardLimitSourceValue;
+import com.ctre.phoenix6.signals.ReverseLimitSourceValue;
 
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.units.measure.Time;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
@@ -40,7 +37,7 @@ public final class Constants {
     public static final int encoderID = 0;
     public static final int CANdiID = 0;
 
-    public static final ForwardLimitSourceValue limitSwitchPort = ForwardLimitSourceValue.RemoteCANdiS1;
+    public static final ReverseLimitSourceValue limitSwitchPort = ReverseLimitSourceValue.RemoteCANdiS1;
 
     // PID Constants
     public static final float pos_kG = 0.0f;
@@ -56,10 +53,10 @@ public final class Constants {
     public static final float vel_kD = 0.0f;
 
     // Positions
-    public static final Angle homeAngle = Degrees.of(-90);
-    public static final Angle topBoxAngle = Degrees.of(20);
-    public static final Angle bottomBoxAngle = Degrees.of(60);
-    public static final Angle lowerLimitAngle = Degrees.of(80);
+    public static final Angle homeAngle = Degrees.of(90);
+    public static final Angle topBoxAngle = Degrees.of(-20);
+    public static final Angle bottomBoxAngle = Degrees.of(-60);
+    public static final Angle lowerLimitAngle = Degrees.of(-80);
 
     // Hardware Constants
     public static final Angle encoderMagnetOffset = Degrees.of(3);
@@ -71,6 +68,5 @@ public final class Constants {
     public static final AngularVelocity maxSafeSpeed = RPM.of(120);
     public static final Angle acceptablePositionError = Degrees.of(3);
     public static final AngularVelocity acceptableVelocityError = RotationsPerSecond.of(1);
-    public static final Time positionTimeout = Seconds.of(7);
   }
 }
