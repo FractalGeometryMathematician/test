@@ -261,9 +261,9 @@ public class OuttakeSubsystem extends SubsystemBase {
       double positiveValue = positiveInput.getAsDouble();
       double negativeValue = negativeInput.getAsDouble();
       double shapedInput = ((positiveValue * positiveValue) - (negativeValue * negativeValue)); // bad name wth
-      AngularVelocity desiredSpeed = OuttakeConstants.maxSafeSpeed.times(shapedInput);
+      AngularVelocity desiredVelocity = OuttakeConstants.maxSafeVelocity.times(shapedInput);
 
-      setVelocity(desiredSpeed);
+      setVelocity(desiredVelocity);
     });
   }
 
@@ -286,12 +286,12 @@ public class OuttakeSubsystem extends SubsystemBase {
    * double rawInput = joystickInput.getAsDouble();
    * double shapedInput = Math.copySign(rawInput * rawInput, rawInput);
    * 
-   * AngularVelocity desiredSpeed =
-   * OuttakeConstants.maxSafeSpeed.times(shapedInput);
-   * if (getHardStopValue() && desiredSpeed.in(RPM) > 0) {
-   * desiredSpeed = RPM.of(0);
+   * AngularVelocity desiredVelocity =
+   * OuttakeConstants.maxSafeVelocity.times(shapedInput);
+   * if (getHardStopValue() && desiredVelocity.in(RPM) > 0) {
+   * desiredVelocity = RPM.of(0);
    * }
-   * setVelocity(desiredSpeed);
+   * setVelocity(desiredVelocity);
    * });
    * }
    * 
@@ -301,7 +301,8 @@ public class OuttakeSubsystem extends SubsystemBase {
    * double shapedInput = Math.copySign(rawInput * rawInput, rawInput);
    * 
    * Voltage maxVoltage =
-   * OuttakeConstants.maxSafeSpeed.div(OuttakeConstants.approximateMaxSpeed).times
+   * OuttakeConstants.maxSafeVelocity.div(OuttakeConstants.approximateMaxVelocity)
+   * .times
    * (Volts.of(12));
    * Voltage outputVoltage = maxVoltage.times(shapedInput);
    * if (getHardStopValue() && outputVoltage.in(Volts) > 0) {

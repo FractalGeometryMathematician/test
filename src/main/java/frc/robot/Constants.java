@@ -51,7 +51,7 @@ public final class Constants {
     public static final AngularAcceleration maxAcceleration = RotationsPerSecondPerSecond.of(150);
     public static final AngularVelocity maxVelocity = RPM.of(3000);
     public static final double allowedError = 0.0; // lowk idk the units
-    public static final AngularVelocity maxMotorSpeed = RPM.of(3000);
+    public static final AngularVelocity maxMotorVelocity = RPM.of(3000);
 
     public static final Current currentLimit = Amps.of(50);
   }
@@ -87,11 +87,11 @@ public final class Constants {
     // Hardware Constants
     public static final Angle encoderMagnetOffset = Degrees.of(3);
     public static final float mechGearRatio = 8.0f;
-    public static final AngularVelocity approximateMaxSpeed = RPM.of(5000 / mechGearRatio);
+    public static final AngularVelocity approximateMaxVelocity = RPM.of(5000 / mechGearRatio);
 
     // Settings
     public static final Current currentLimit = Amps.of(120);
-    public static final AngularVelocity maxSafeSpeed = RPM.of(120);
+    public static final AngularVelocity maxSafeVelocity = RPM.of(120);
     public static final Angle acceptablePositionError = Degrees.of(3);
     public static final AngularVelocity acceptableVelocityError = RotationsPerSecond.of(1);
   }

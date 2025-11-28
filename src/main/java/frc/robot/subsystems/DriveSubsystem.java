@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkClosedLoopController;
 
@@ -32,6 +33,9 @@ public class DriveSubsystem extends SubsystemBase {
     private final SparkMax leftFollower = new SparkMax(DriveConstants.leftFollowerID, MotorType.kBrushless);
     private final SparkMax rightLeader = new SparkMax(DriveConstants.rightLeaderID, MotorType.kBrushless);
     private final SparkMax rightFollower = new SparkMax(DriveConstants.rightFollowerID, MotorType.kBrushless);
+
+    private final RelativeEncoder leftLeaderEncoder;
+    private final RelativeEncoder rightLeaderEncoder;
 
     private SparkClosedLoopController leftLeaderController;
     private SparkClosedLoopController rightLeaderController;
@@ -75,23 +79,34 @@ public class DriveSubsystem extends SubsystemBase {
         leftLeaderController = leftLeader.getClosedLoopController();
         rightLeaderController = rightLeader.getClosedLoopController();
 
+        leftLeaderEncoder = leftLeader.getEncoder();
+        rightLeaderEncoder = rightLeader.getEncoder();
+
         robotDriveController = new DifferentialDrive(
-                leftOutput -> setLeftSpeed(DriveConstants.maxMotorSpeed.times(leftOutput)),
-                rightOutput -> setRightSpeed(DriveConstants.maxMotorSpeed.times(rightOutput)));
+                leftOutput -> setLeftVelocity(DriveConstants.maxMotorVelocity.times(leftOutput)),
+                rightOutput -> setRightVelocity(DriveConstants.maxMotorVelocity.times(rightOutput)));
     }
 
-    private void setLeftSpeed(AngularVelocity desiredVelocity) {
+    private void setLeftVelocity(AngularVelocity desiredVelocity) {
         Voltage arbFF = Volts.of(velocityFeedforward.calculate(desiredVelocity.in(RPM)));
 
         leftLeaderController.setReference(desiredVelocity.in(RPM), ControlType.kMAXMotionVelocityControl,
                 ClosedLoopSlot.kSlot0, arbFF.in(Volts));
     }
 
-    private void setRightSpeed(AngularVelocity desiredVelocity) {
+    private void setRightVelocity(AngularVelocity desiredVelocity) {
         Voltage arbFF = Volts.of(velocityFeedforward.calculate(desiredVelocity.in(RPM)));
 
         rightLeaderController.setReference(desiredVelocity.in(RPM), ControlType.kMAXMotionVelocityControl,
                 ClosedLoopSlot.kSlot0, arbFF.in(Volts));
+    }
+
+    public double getLeftVelocityRPM() {
+        return leftLeaderEncoder.getVelocity();
+    }
+
+    public double getRightVelocityRPM() {
+        return rightLeaderEncoder.getVelocity();
     }
 
     public Command tankDrive(DoubleSupplier left, DoubleSupplier right) {
@@ -100,9 +115,9 @@ public class DriveSubsystem extends SubsystemBase {
         });
     }
 
-    public Command arcadeDrive(DoubleSupplier speed, DoubleSupplier rotation) {
+    public Command arcadeDrive(DoubleSupplier velocity, DoubleSupplier rotation) {
         return this.run(() -> {
-            robotDriveController.arcadeDrive(speed.getAsDouble(), rotation.getAsDouble());
+            robotDriveController.arcadeDrive(velocity.getAsDouble(), rotation.getAsDouble());
         });
     }
 
