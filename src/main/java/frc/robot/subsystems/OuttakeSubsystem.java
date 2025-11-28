@@ -29,6 +29,7 @@ import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 
+import edu.wpi.first.math.estimator.AngleStatistics;
 import edu.wpi.first.units.CurrentUnit;
 import edu.wpi.first.units.TorqueUnit;
 import edu.wpi.first.units.measure.Angle;
@@ -199,22 +200,11 @@ public class OuttakeSubsystem extends SubsystemBase {
     return goToBottomBox(false);
   }
 
-  public Command JoystickPositionControl(DoubleSupplier joystickInput) {
+  public Command VelocityControl(DoubleSupplier negativeInput, DoubleSupplier positiveInput) {
     return this.run(() -> {
-      Angle desiredAngle = GRTUtils.mapJoystick(joystickInput.getAsDouble(), OuttakeConstants.lowerLimitAngle,
-          OuttakeConstants.homeAngle);
-      if (desiredAngle.gt(OuttakeConstants.lowerLimitAngle)) {
-        desiredAngle = OuttakeConstants.lowerLimitAngle;
-      }
-      setPosition(desiredAngle);
-    });
-  }
-
-  public Command JoystickVelocityControl(DoubleSupplier joystickInput) {
-    return this.run(() -> {
-      double rawInput = joystickInput.getAsDouble();
-      double shapedInput = Math.copySign(rawInput * rawInput, rawInput);
-
+      double positiveValue = positiveInput.getAsDouble();
+      double negativeValue = negativeInput.getAsDouble();
+      double shapedInput = ((positiveValue * positiveValue) - (negativeValue * negativeValue)); // bad name wth
       AngularVelocity desiredSpeed = OuttakeConstants.maxSafeSpeed.times(shapedInput);
       if (getHardStopValue() && desiredSpeed.in(RPM) > 0) {
         desiredSpeed = RPM.of(0);
@@ -223,17 +213,48 @@ public class OuttakeSubsystem extends SubsystemBase {
     });
   }
 
-  public Command JoystickVoltageControl(DoubleSupplier joystickInput) {
-    return this.run(() -> {
-      double rawInput = joystickInput.getAsDouble();
-      double shapedInput = Math.copySign(rawInput * rawInput, rawInput);
-
-      Voltage maxVoltage = OuttakeConstants.maxSafeSpeed.div(OuttakeConstants.approximateMaxSpeed).times(Volts.of(12));
-      Voltage outputVoltage = maxVoltage.times(shapedInput);
-      if (getHardStopValue() && outputVoltage.in(Volts) > 0) {
-        outputVoltage = Volts.of(0);
-      }
-      setVoltage(outputVoltage);
-    });
-  }
+  /*
+   * No Joysticks(oops)
+   * public Command JoystickPositionControl(DoubleSupplier joystickInput) {
+   * return this.run(() -> {
+   * Angle desiredAngle = GRTUtils.mapJoystick(joystickInput.getAsDouble(),
+   * OuttakeConstants.lowerLimitAngle,
+   * OuttakeConstants.homeAngle);
+   * if (desiredAngle.gt(OuttakeConstants.lowerLimitAngle)) {
+   * desiredAngle = OuttakeConstants.lowerLimitAngle;
+   * }
+   * setPosition(desiredAngle);
+   * });
+   * }
+   * 
+   * public Command JoystickVelocityControl(DoubleSupplier joystickInput) {
+   * return this.run(() -> {
+   * double rawInput = joystickInput.getAsDouble();
+   * double shapedInput = Math.copySign(rawInput * rawInput, rawInput);
+   * 
+   * AngularVelocity desiredSpeed =
+   * OuttakeConstants.maxSafeSpeed.times(shapedInput);
+   * if (getHardStopValue() && desiredSpeed.in(RPM) > 0) {
+   * desiredSpeed = RPM.of(0);
+   * }
+   * setVelocity(desiredSpeed);
+   * });
+   * }
+   * 
+   * public Command JoystickVoltageControl(DoubleSupplier joystickInput) {
+   * return this.run(() -> {
+   * double rawInput = joystickInput.getAsDouble();
+   * double shapedInput = Math.copySign(rawInput * rawInput, rawInput);
+   * 
+   * Voltage maxVoltage =
+   * OuttakeConstants.maxSafeSpeed.div(OuttakeConstants.approximateMaxSpeed).times
+   * (Volts.of(12));
+   * Voltage outputVoltage = maxVoltage.times(shapedInput);
+   * if (getHardStopValue() && outputVoltage.in(Volts) > 0) {
+   * outputVoltage = Volts.of(0);
+   * }
+   * setVoltage(outputVoltage);
+   * });
+   * }
+   */
 }
