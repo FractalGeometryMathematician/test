@@ -7,12 +7,15 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.RPM;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.Seconds;
 
 import com.ctre.phoenix6.signals.ForwardLimitSourceValue;
 
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Time;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
@@ -58,10 +61,16 @@ public final class Constants {
     public static final Angle bottomBoxAngle = Degrees.of(60);
     public static final Angle lowerLimitAngle = Degrees.of(80);
 
+    // Hardware Constants
     public static final Angle encoderMagnetOffset = Degrees.of(3);
     public static final float mechGearRatio = 8.0f;
     public static final AngularVelocity approximateMaxSpeed = RPM.of(5000 / mechGearRatio);
+
+    // Settings
     public static final Current currentLimit = Amps.of(120);
     public static final AngularVelocity maxSafeSpeed = RPM.of(120);
+    public static final Angle acceptablePositionError = Degrees.of(3);
+    public static final AngularVelocity acceptableVelocityError = RotationsPerSecond.of(1);
+    public static final Time positionTimeout = Seconds.of(7);
   }
 }

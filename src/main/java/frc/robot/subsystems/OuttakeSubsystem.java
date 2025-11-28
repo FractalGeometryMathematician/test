@@ -6,6 +6,7 @@ import static edu.wpi.first.units.Units.Volts;
 
 import java.util.function.DoubleSupplier;
 
+import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
@@ -21,6 +22,7 @@ import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.ControlModeValue;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.ForwardLimitValue;
 import com.ctre.phoenix6.signals.GravityTypeValue;
@@ -33,9 +35,11 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Torque;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Per;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.GRTUtils;
 import frc.robot.Constants.OuttakeConstants;
@@ -134,6 +138,14 @@ public class OuttakeSubsystem extends SubsystemBase {
     return motor.getPosition().getValue();
   }
 
+  public boolean atPosition() {
+    if (motor.getControlMode().getValue() != ControlModeValue.PositionTorqueCurrentFOC) {
+      return false;
+    }
+
+    return Rotations.of(Math.abs(motor.getClosedLoopError().getValue())).lte(OuttakeConstants.acceptablePositionError);
+  }
+
   public void setPosition(Angle posAngle) {
     motor.setControl(posRequest.withPosition(posAngle));
   }
@@ -150,28 +162,50 @@ public class OuttakeSubsystem extends SubsystemBase {
     motor.setControl(voltageRequest.withOutput(setVoltage));
   }
 
-  public Command goToHome() {
-    return this.runOnce(() -> {
-      setPosition(OuttakeConstants.homeAngle);
+  private Command goToPositionFactory(Angle position, boolean blocking) {
+    Command baseCommand = this.runOnce(() -> {
+      setPosition(position);
     });
+    Command waitForPosition = Commands.waitUntil(() -> atPosition());
+
+    if (blocking) {
+      return baseCommand.andThen(waitForPosition);
+    } else {
+      return baseCommand;
+    }
+  }
+
+  public Command goToHome(boolean blocking) {
+    return goToPositionFactory(OuttakeConstants.homeAngle, blocking);
+  }
+
+  public Command goToHome() {
+    return goToHome(false);
+  }
+
+  public Command goToTopBox(boolean blocking) {
+    return goToPositionFactory(OuttakeConstants.topBoxAngle, blocking);
   }
 
   public Command goToTopBox() {
-    return this.runOnce(() -> {
-      setPosition(OuttakeConstants.topBoxAngle);
-    });
+    return goToTopBox(false);
+  }
+
+  public Command goToBottomBox(boolean blocking) {
+    return goToPositionFactory(OuttakeConstants.bottomBoxAngle, blocking);
   }
 
   public Command goToBottomBox() {
-    return this.runOnce(() -> {
-      setPosition(OuttakeConstants.bottomBoxAngle);
-    });
+    return goToBottomBox(false);
   }
 
   public Command JoystickPositionControl(DoubleSupplier joystickInput) {
     return this.run(() -> {
       Angle desiredAngle = GRTUtils.mapJoystick(joystickInput.getAsDouble(), OuttakeConstants.lowerLimitAngle,
           OuttakeConstants.homeAngle);
+      if (desiredAngle.gt(OuttakeConstants.lowerLimitAngle)) {
+        desiredAngle = OuttakeConstants.lowerLimitAngle;
+      }
       setPosition(desiredAngle);
     });
   }
