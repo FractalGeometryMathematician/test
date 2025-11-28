@@ -10,7 +10,7 @@ public class GRTUtils {
     }
 
     public static double mapJoystick(double x, double outMin, double outMax) {
-        return map(x, 1, 1, outMin, outMax);
+        return map(x, -1, 1, outMin, outMax);
     }
 
     public static Angle mapJoystick(double x, Angle outMin, Angle outMax) {

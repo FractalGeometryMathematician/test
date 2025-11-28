@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
@@ -25,10 +26,10 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.ControlModeValue;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
-import com.ctre.phoenix6.signals.ForwardLimitValue;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.signals.ReverseLimitValue;
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 
 import edu.wpi.first.units.CurrentUnit;
@@ -99,6 +100,8 @@ public class OuttakeSubsystem extends SubsystemBase {
         .withSoftwareLimitSwitch(
             new SoftwareLimitSwitchConfigs()
                 .withForwardSoftLimitEnable(true)
+                .withReverseSoftLimitEnable(true)
+                .withReverseSoftLimitThreshold(OuttakeConstants.lowerLimitAngle)
                 .withForwardSoftLimitThreshold(OuttakeConstants.homeAngle))
         .withCurrentLimits(
             new CurrentLimitsConfigs()
@@ -121,8 +124,8 @@ public class OuttakeSubsystem extends SubsystemBase {
   }
 
   public boolean getHardStopValue() {
-    ForwardLimitValue curSwitchValue = motor.getForwardLimit().getValue();
-    if (curSwitchValue == ForwardLimitValue.ClosedToGround) {
+    ReverseLimitValue curSwitchValue = motor.getReverseLimit().getValue();
+    if (curSwitchValue == ReverseLimitValue.ClosedToGround) {
       return true;
     } else {
       return false;
@@ -157,6 +160,11 @@ public class OuttakeSubsystem extends SubsystemBase {
   }
 
   public void setPosition(Angle posAngle) {
+    if (posAngle.gt(OuttakeConstants.homeAngle)) {
+      posAngle = OuttakeConstants.homeAngle;
+    } else if (posAngle.lt(OuttakeConstants.lowerLimitAngle)) {
+      posAngle = OuttakeConstants.lowerLimitAngle;
+    }
     motor.setControl(posRequest.withPosition(posAngle));
   }
 
@@ -167,6 +175,8 @@ public class OuttakeSubsystem extends SubsystemBase {
   public void setVelocity(AngularVelocity setVelocity) {
     if (getHardStopValue() && setVelocity.in(RPM) < 0) {
       setVelocity = RPM.of(0);
+    } else if (getPosition().gt(OuttakeConstants.homeAngle) && setVelocity.in(RPM) > 0) {
+      setVelocity = RPM.of(0);
     }
 
     motor.setControl(velRequest.withVelocity(setVelocity));
@@ -174,6 +184,8 @@ public class OuttakeSubsystem extends SubsystemBase {
 
   public void setVoltage(Voltage setVoltage) {
     if (getHardStopValue() && setVoltage.in(Volts) < 0) {
+      setVoltage = Volts.of(0);
+    } else if (getPosition().gt(OuttakeConstants.homeAngle) && setVoltage.in(Volts) > 0) {
       setVoltage = Volts.of(0);
     }
 
@@ -217,44 +229,30 @@ public class OuttakeSubsystem extends SubsystemBase {
     return goToBottomBox(false);
   }
 
-  private Angle getNextHighestPosition() {
-    // bottom -> top -> home
+  public Command stepUp() {
     Angle currentPos = getPosition();
     if (currentPos.lt(OuttakeConstants.bottomBoxAngle) && !atPosition(OuttakeConstants.bottomBoxAngle)) {
-      return OuttakeConstants.bottomBoxAngle;
+      return goToBottomBox(true);
     } else if (currentPos.lt(OuttakeConstants.topBoxAngle) && !atPosition(OuttakeConstants.topBoxAngle)) {
-      return OuttakeConstants.topBoxAngle;
+      return goToTopBox(true);
     } else if (currentPos.lt(OuttakeConstants.homeAngle) && !atPosition(OuttakeConstants.homeAngle)) {
-      return OuttakeConstants.homeAngle;
+      return goToHome(true);
     } else {
-      return OuttakeConstants.bottomBoxAngle;
+      return goToBottomBox(true);
     }
-  }
-
-  private Angle getNextLowestPosition() {
-    // home -> top -> bottom
-    Angle currentPos = getPosition();
-    if (currentPos.gt(OuttakeConstants.homeAngle) && !atPosition(OuttakeConstants.homeAngle)) {
-      return OuttakeConstants.homeAngle;
-    } else if (currentPos.gt(OuttakeConstants.topBoxAngle) && !atPosition(OuttakeConstants.topBoxAngle)) {
-      return OuttakeConstants.topBoxAngle;
-    } else if (currentPos.gt(OuttakeConstants.bottomBoxAngle) && !atPosition(OuttakeConstants.bottomBoxAngle)) {
-      return OuttakeConstants.bottomBoxAngle;
-    } else {
-      return OuttakeConstants.homeAngle;
-    }
-  }
-
-  public Command stepUp() {
-    return this.runOnce(() -> {
-      setPosition(getNextHighestPosition());
-    });
   }
 
   public Command stepDown() {
-    return this.runOnce(() -> {
-      setPosition(getNextLowestPosition());
-    });
+    Angle currentPos = getPosition();
+    if (currentPos.gt(OuttakeConstants.homeAngle) && !atPosition(OuttakeConstants.homeAngle)) {
+      return goToHome(true);
+    } else if (currentPos.gt(OuttakeConstants.topBoxAngle) && !atPosition(OuttakeConstants.topBoxAngle)) {
+      return goToTopBox(true);
+    } else if (currentPos.gt(OuttakeConstants.bottomBoxAngle) && !atPosition(OuttakeConstants.bottomBoxAngle)) {
+      return goToBottomBox(true);
+    } else {
+      return goToHome(true);
+    }
   }
 
   public Command VelocityControl(DoubleSupplier negativeInput, DoubleSupplier positiveInput) {
