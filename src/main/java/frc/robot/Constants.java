@@ -6,6 +6,8 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
@@ -17,6 +19,8 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.Time;
 
 /**
@@ -32,6 +36,7 @@ import edu.wpi.first.units.measure.Time;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
+
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
   }
@@ -69,17 +74,17 @@ public final class Constants {
     public static final ReverseLimitSourceValue limitSwitchPort = ReverseLimitSourceValue.RemoteCANdiS1;
 
     // PID Constants
-    public static final float pos_kG = 0.0f;
-    public static final float pos_kS = 0.0f;
-    public static final float pos_kP = 1f;
+    public static final float pos_kG = 0.35f;
+    public static final float pos_kS = 0.25f;
+    public static final float pos_kP = 45f;
     public static final float pos_kI = 0.0f;
-    public static final float pos_kD = 1f;
+    public static final float pos_kD = 3.5f;
 
     public static final float vel_kG = 0.0f;
-    public static final float vel_kS = 0.0f;
-    public static final float vel_kP = 1f;
+    public static final float vel_kS = 0.15f;
+    public static final float vel_kP = 0.3f;
     public static final float vel_kI = 0.0f;
-    public static final float vel_kD = 1f;
+    public static final float vel_kD = 0.0f;
 
     // Positions
     public static final Angle homeAngle = Degrees.of(90);
@@ -92,6 +97,8 @@ public final class Constants {
     public static final Angle encoderMagnetOffset = Degrees.of(3);
     public static final float mechGearRatio = 8.0f;
     public static final AngularVelocity approximateMaxVelocity = RPM.of(5000 / mechGearRatio);
+    public static final MomentOfInertia armMomentOfInertia = KilogramSquareMeters.of(0.0228579824);
+    public static final Distance armLength = Inches.of(16.5);
 
     // Settings
     public static final Current currentLimit = Amps.of(120);

@@ -1,8 +1,13 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.KilogramSquareMeters;
+import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import java.util.function.DoubleSupplier;
@@ -31,14 +36,23 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.ReverseLimitValue;
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.CurrentUnit;
 import edu.wpi.first.units.TorqueUnit;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Torque;
-import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Per;
+import edu.wpi.first.units.measure.Torque;
+import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
+import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -166,6 +180,7 @@ public class OuttakeSubsystem extends SubsystemBase {
     } else if (posAngle.lt(OuttakeConstants.reverseSoftLimitAngle)) {
       posAngle = OuttakeConstants.reverseSoftLimitAngle;
     }
+
     motor.setControl(posRequest.withPosition(posAngle));
   }
 
@@ -312,4 +327,41 @@ public class OuttakeSubsystem extends SubsystemBase {
    * });
    * }
    */
+
+  private final DCMotor m_motorSim = DCMotor.getKrakenX60Foc(1);
+  private final SingleJointedArmSim m_armSim = new SingleJointedArmSim(m_motorSim,
+      OuttakeConstants.mechGearRatio,
+      OuttakeConstants.armMomentOfInertia.in(KilogramSquareMeters),
+      OuttakeConstants.armLength.in(Meters),
+      OuttakeConstants.reverseSoftLimitAngle.in(Radians),
+      OuttakeConstants.forwardSoftLimitAngle.in(Radians),
+      true,
+      0);
+
+  @Override
+  public void simulationPeriodic() {
+    var talonFXSim = motor.getSimState();
+    var cancoderSim = pivotEncoder.getSimState();
+
+    talonFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
+    var motorVoltage = talonFXSim.getMotorVoltageMeasure();
+
+    m_armSim.setInputVoltage(motorVoltage.in(Volts));
+    m_armSim.update(0.020);
+
+    Angle armAngle = Radians.of(m_armSim.getAngleRads());
+    Angle motorAngle = armAngle.times(OuttakeConstants.mechGearRatio);
+
+    AngularVelocity armVelocity = RadiansPerSecond.of(m_armSim.getVelocityRadPerSec());
+    AngularVelocity motorVelocity = armVelocity.times(OuttakeConstants.mechGearRatio);
+
+    cancoderSim.setRawPosition(armAngle);
+    cancoderSim.setVelocity(armVelocity);
+
+    talonFXSim.setRawRotorPosition(motorAngle);
+    talonFXSim.setRotorVelocity(motorVelocity);
+
+    talonFXSim.setReverseLimit(m_armSim.hasHitLowerLimit());
+
+  }
 }
