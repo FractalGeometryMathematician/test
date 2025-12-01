@@ -32,6 +32,8 @@ import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.ReverseLimitValue;
+import com.ctre.phoenix6.signals.S1CloseStateValue;
+import com.ctre.phoenix6.signals.S1FloatStateValue;
 import com.ctre.phoenix6.signals.S1StateValue;
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 
@@ -126,6 +128,9 @@ public class OuttakeSubsystem extends SubsystemBase {
     StatusCode encoderStatusCode = pivotEncoder.getConfigurator().apply(encoderConfig);
 
     candiConfig = new CANdiConfiguration();
+    candiConfig.DigitalInputs
+        .withS1FloatState(S1FloatStateValue.PullHigh)
+        .withS1CloseState(S1CloseStateValue.CloseWhenLow);
     StatusCode candiConfigStatus = hardstop.getConfigurator().apply(candiConfig);
 
     if (motorConfigStatus != StatusCode.OK || encoderStatusCode != StatusCode.OK
@@ -391,7 +396,7 @@ public class OuttakeSubsystem extends SubsystemBase {
     // talonFXSim.setRotorVelocity(motorVelocity);
 
     boolean simHardstopTriggered = getPosition().lte(OuttakeConstants.reverseSoftLimitAngle);
-    S1StateValue hardstopValue = simHardstopTriggered ? S1StateValue.High : S1StateValue.Low;
+    S1StateValue hardstopValue = simHardstopTriggered ? S1StateValue.Low : S1StateValue.High;
     hardstopSim.setS1State(hardstopValue);
     talonFXSim.setReverseLimit(simHardstopTriggered);
   }
