@@ -10,6 +10,7 @@ import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
+import java.util.Set;
 import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix6.StatusCode;
@@ -258,7 +259,7 @@ public class OuttakeSubsystem extends SubsystemBase {
     return goToBottomBox(false);
   }
 
-  public Command stepUp() {
+  private Command selectStepUpCommand() {
     Angle currentPos = getPosition();
     System.out.print(currentPos.toLongString());
     System.out.print(" ");
@@ -277,7 +278,11 @@ public class OuttakeSubsystem extends SubsystemBase {
     }
   }
 
-  public Command stepDown() {
+  public Command stepUp() {
+    return Commands.defer(this::selectStepUpCommand, Set.of(this));
+  }
+
+  private Command selectStepDownCommand() {
     Angle currentPos = getPosition();
     System.out.print(currentPos.toLongString());
     System.out.print(" ");
@@ -294,6 +299,10 @@ public class OuttakeSubsystem extends SubsystemBase {
       System.out.println(8);
       return goToHome(true);
     }
+  }
+
+  public Command stepDown() {
+    return Commands.defer(this::selectStepDownCommand, Set.of(this));
   }
 
   public Command VelocityControl(DoubleSupplier negativeInput, DoubleSupplier positiveInput) {
