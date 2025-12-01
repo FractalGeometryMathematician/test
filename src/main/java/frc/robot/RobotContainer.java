@@ -8,12 +8,14 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.subsystems.ControllerTest;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.OuttakeSubsystem;
 
 public class RobotContainer {
   private final OuttakeSubsystem m_outtakeSubsystem = new OuttakeSubsystem();
   private final DriveSubsystem m_driveSubsystem = new DriveSubsystem();
+  private final ControllerTest m_controllerTest = new ControllerTest();
 
   private final CommandPS5Controller m_driverController = new CommandPS5Controller(
       OperatorConstants.kDriverControllerPort);
@@ -30,6 +32,16 @@ public class RobotContainer {
         m_driveSubsystem.tankDrive(
             () -> -m_driverController.getLeftY(),
             () -> -m_driverController.getRightY()));
+    m_controllerTest.setDefaultCommand(
+        m_controllerTest.joystickInput(
+            () -> -m_driverController.getL2Axis(),
+            () -> -m_driverController.getR2Axis(),
+            () -> -m_driverController.getRightX(),
+            () -> -m_driverController.getRightY(),
+            () -> -m_driverController.getLeftX(),
+            () -> -m_driverController.getLeftY(),
+            () -> m_driverController.povDown().getAsBoolean(),
+            () -> m_driverController.povUp().getAsBoolean()));
   }
 
   private void configureBindings() {
