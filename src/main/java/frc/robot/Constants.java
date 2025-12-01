@@ -39,9 +39,9 @@ public final class Constants {
   public static final class DriveConstants {
     // CAN IDs
     public static final int leftLeaderID = 0;
-    public static final int leftFollowerID = 0;
-    public static final int rightLeaderID = 0;
-    public static final int rightFollowerID = 0;
+    public static final int leftFollowerID = 1;
+    public static final int rightLeaderID = 2;
+    public static final int rightFollowerID = 3;
 
     // PID Constants
     public static final float kP = 0.0f;
@@ -63,23 +63,23 @@ public final class Constants {
   public static final class OuttakeConstants {
     // CAN IDs
     public static final int motorID = 0;
-    public static final int encoderID = 0;
-    public static final int CANdiID = 0;
+    public static final int encoderID = 1;
+    public static final int CANdiID = 2;
 
     public static final ReverseLimitSourceValue limitSwitchPort = ReverseLimitSourceValue.RemoteCANdiS1;
 
     // PID Constants
     public static final float pos_kG = 0.0f;
     public static final float pos_kS = 0.0f;
-    public static final float pos_kP = 0.0f;
+    public static final float pos_kP = 1f;
     public static final float pos_kI = 0.0f;
-    public static final float pos_kD = 0.0f;
+    public static final float pos_kD = 1f;
 
     public static final float vel_kG = 0.0f;
     public static final float vel_kS = 0.0f;
-    public static final float vel_kP = 0.0f;
+    public static final float vel_kP = 1f;
     public static final float vel_kI = 0.0f;
-    public static final float vel_kD = 0.0f;
+    public static final float vel_kD = 1f;
 
     // Positions
     public static final Angle homeAngle = Degrees.of(90);
