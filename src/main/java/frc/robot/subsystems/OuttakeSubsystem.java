@@ -157,7 +157,7 @@ public class OuttakeSubsystem extends SubsystemBase {
   // at pre prescribed position
   private boolean atSetPosition() {
     if (motor.getControlMode().getValue() != ControlModeValue.PositionTorqueCurrentFOC) {
-      return false;
+      return true;
     }
 
     return (Rotations.of(Math.abs(motor.getClosedLoopError().getValue())))
