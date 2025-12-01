@@ -9,6 +9,12 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.hardware.CANdi;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
+import edu.wpi.first.networktables.DoublePublisher;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
+
+//change auto to use setposition instead of velocity
+//manual not necessary
 
 
 public class IntakeSubsystem extends SubsystemBase {
@@ -19,6 +25,7 @@ public class IntakeSubsystem extends SubsystemBase {
   private double upperLim = /*decide val */ 50; //check movearm to change value, 50 is just exorbitantly large random number, but check signage here
   private double invert = 1; //to reverse direction, just change 1 to -1
   private boolean goingUp = false;
+  DoublePublisher pos;
 
   
   public IntakeSubsystem() {
@@ -35,7 +42,7 @@ public class IntakeSubsystem extends SubsystemBase {
     }
   }
 
-  public void auto(boolean left, boolean right){
+  public void autoSetIntake(boolean left, boolean right){
     if(left && !right ){  
         leverMotor.set(-0.1*invert);
       
