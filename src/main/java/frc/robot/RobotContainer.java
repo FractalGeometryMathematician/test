@@ -32,21 +32,23 @@ public class RobotContainer {
         m_driveSubsystem.tankDrive(
             () -> -m_driverController.getLeftY(),
             () -> -m_driverController.getRightY()));
-    m_controllerTest.setDefaultCommand(
-        m_controllerTest.joystickInput(
-            () -> -m_driverController.getL2Axis(),
-            () -> -m_driverController.getR2Axis(),
-            () -> -m_driverController.getRightX(),
-            () -> -m_driverController.getRightY(),
-            () -> -m_driverController.getLeftX(),
-            () -> -m_driverController.getLeftY(),
-            () -> m_driverController.povDown().getAsBoolean(),
-            () -> m_driverController.povUp().getAsBoolean()));
+    // m_controllerTest.setDefaultCommand(
+    // m_controllerTest.joystickInput(
+    // () -> -m_driverController.getL2Axis(),
+    // () -> -m_driverController.getR2Axis(),
+    // () -> -m_driverController.getRightX(),
+    // () -> -m_driverController.getRightY(),
+    // () -> -m_driverController.getLeftX(),
+    // () -> -m_driverController.getLeftY(),
+    // () -> m_driverController.povDown().getAsBoolean(),
+    // () -> m_driverController.povUp().getAsBoolean()));
   }
 
   private void configureBindings() {
-    m_driverController.povUp().onTrue(m_outtakeSubsystem.stepUp());
-    m_driverController.povDown().onTrue(m_outtakeSubsystem.stepDown());
+    m_driverController.povUp()
+        .onTrue(Commands.runOnce(() -> System.out.println("Step Up")).andThen(m_outtakeSubsystem.stepUp()));
+    m_driverController.povDown()
+        .onTrue(Commands.runOnce(() -> System.out.println("Step Down")).andThen(m_outtakeSubsystem.stepDown()));
   }
 
   public Command getAutonomousCommand() {

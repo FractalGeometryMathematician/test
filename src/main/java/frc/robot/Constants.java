@@ -77,21 +77,21 @@ public final class Constants {
     public static final float pos_kG = 0.35f;
     public static final float pos_kS = 0.25f;
     public static final float pos_kP = 45f;
-    public static final float pos_kI = 0.0f;
+    public static final float pos_kI = 0.1f;
     public static final float pos_kD = 3.5f;
 
-    public static final float vel_kG = 0.0f;
+    public static final float vel_kG = 1f;
     public static final float vel_kS = 0.15f;
     public static final float vel_kP = 0.3f;
     public static final float vel_kI = 0.0f;
-    public static final float vel_kD = 0.0f;
+    public static final float vel_kD = 0.1f;
 
     // Positions
     public static final Angle homeAngle = Degrees.of(90);
     public static final Angle topBoxAngle = Degrees.of(-20);
     public static final Angle bottomBoxAngle = Degrees.of(-60);
     public static final Angle reverseSoftLimitAngle = Degrees.of(-80);
-    public static final Angle forwardSoftLimitAngle = homeAngle;
+    public static final Angle forwardSoftLimitAngle = Degrees.of(120);
 
     // Hardware Constants
     public static final Angle encoderMagnetOffset = Degrees.of(3);
