@@ -10,6 +10,7 @@ import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.CANdiConfiguration;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.HardwareLimitSwitchConfigs;
@@ -23,6 +24,7 @@ import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.hardware.CANdi;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.ControlModeValue;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
@@ -30,6 +32,7 @@ import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.ReverseLimitValue;
+import com.ctre.phoenix6.signals.S1StateValue;
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 
 import edu.wpi.first.units.CurrentUnit;
@@ -60,6 +63,9 @@ public class OuttakeSubsystem extends SubsystemBase {
 
   private final CANcoder pivotEncoder = new CANcoder(OuttakeConstants.encoderID, "can");
   private final CANcoderConfiguration encoderConfig;
+
+  private final CANdi hardstop = new CANdi(OuttakeConstants.CANdiID, "can");
+  private final CANdiConfiguration candiConfig;
 
   public OuttakeSubsystem() {
     positionPIDConfigs = new Slot0Configs()
@@ -119,7 +125,11 @@ public class OuttakeSubsystem extends SubsystemBase {
         .withMagnetOffset(OuttakeConstants.encoderMagnetOffset));
     StatusCode encoderStatusCode = pivotEncoder.getConfigurator().apply(encoderConfig);
 
-    if (motorConfigStatus != StatusCode.OK || encoderStatusCode != StatusCode.OK) {
+    candiConfig = new CANdiConfiguration();
+    StatusCode candiConfigStatus = hardstop.getConfigurator().apply(candiConfig);
+
+    if (motorConfigStatus != StatusCode.OK || encoderStatusCode != StatusCode.OK
+        || candiConfigStatus != StatusCode.OK) {
       throw new IllegalStateException("Haha ur fucked");
     }
     motorKt = motor.getMotorKT().getValue();
@@ -357,6 +367,7 @@ public class OuttakeSubsystem extends SubsystemBase {
   @Override
   public void simulationPeriodic() {
     var talonFXSim = motor.getSimState();
+    var hardstopSim = hardstop.getSimState();
     // var cancoderSim = pivotEncoder.getSimState();
 
     // talonFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
@@ -379,6 +390,9 @@ public class OuttakeSubsystem extends SubsystemBase {
     // talonFXSim.setRawRotorPosition(motorAngle);
     // talonFXSim.setRotorVelocity(motorVelocity);
 
-    talonFXSim.setReverseLimit(getPosition().lte(OuttakeConstants.reverseSoftLimitAngle));
+    boolean simHardstopTriggered = getPosition().lte(OuttakeConstants.reverseSoftLimitAngle);
+    S1StateValue hardstopValue = simHardstopTriggered ? S1StateValue.High : S1StateValue.Low;
+    hardstopSim.setS1State(hardstopValue);
+    talonFXSim.setReverseLimit(simHardstopTriggered);
   }
 }
