@@ -13,21 +13,28 @@ import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.OuttakeSubsystem;
 
 public class RobotContainer {
+
+  // Subsystems
   private final OuttakeSubsystem m_outtakeSubsystem = new OuttakeSubsystem();
   private final DriveSubsystem m_driveSubsystem = new DriveSubsystem();
+
+  // subsystem used to test the controller bindings
   private final ControllerTest m_controllerTest = new ControllerTest();
 
+  // Driver controller
   private final CommandPS5Controller m_driverController = new CommandPS5Controller(
       OperatorConstants.kDriverControllerPort);
 
   public RobotContainer() {
     configureBindings();
 
+    // Outtake uses velocity control with triggers
     m_outtakeSubsystem.setDefaultCommand(
         m_outtakeSubsystem.VelocityControl(
             () -> -m_driverController.getL2Axis(),
             () -> -m_driverController.getR2Axis()));
 
+    // Drive base utilizes tank drive controls
     m_driveSubsystem.setDefaultCommand(
         m_driveSubsystem.tankDrive(
             () -> -m_driverController.getLeftY(),
@@ -45,6 +52,7 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
+    // D-Pad used to control step up and step down
     m_driverController.povUp().onTrue(m_outtakeSubsystem.stepUp());
     m_driverController.povDown().onTrue(m_outtakeSubsystem.stepDown());
   }
