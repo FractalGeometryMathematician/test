@@ -1,52 +1,24 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.RPM;
-import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.Volts;
+import static edu.wpi.first.units.Units.*;
+import edu.wpi.first.units.measure.*;
+import edu.wpi.first.units.CurrentUnit;
+import edu.wpi.first.units.TorqueUnit;
 
 import java.util.Set;
 import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
-import com.ctre.phoenix6.configs.CANcoderConfiguration;
-import com.ctre.phoenix6.configs.CANdiConfiguration;
-import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
-import com.ctre.phoenix6.configs.FeedbackConfigs;
-import com.ctre.phoenix6.configs.HardwareLimitSwitchConfigs;
-import com.ctre.phoenix6.configs.MagnetSensorConfigs;
-import com.ctre.phoenix6.configs.MotorOutputConfigs;
-import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.Slot1Configs;
-import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.configs.*;
 import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.CANdi;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.ControlModeValue;
-import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
-import com.ctre.phoenix6.signals.ForwardLimitValue;
-import com.ctre.phoenix6.signals.GravityTypeValue;
-import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.ctre.phoenix6.signals.ReverseLimitValue;
-import com.ctre.phoenix6.signals.S1CloseStateValue;
-import com.ctre.phoenix6.signals.S1FloatStateValue;
-import com.ctre.phoenix6.signals.S1StateValue;
-import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
+import com.ctre.phoenix6.signals.*;
 
-import edu.wpi.first.units.CurrentUnit;
-import edu.wpi.first.units.TorqueUnit;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.units.measure.Per;
-import edu.wpi.first.units.measure.Torque;
-import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -73,11 +45,11 @@ public class OuttakeSubsystem extends SubsystemBase {
   public OuttakeSubsystem() {
     StatusCode motorConfigStatus = configureMotors();
     StatusCode encoderStatusCode = configureEncoder();
-    StatusCode candiConfigStatus = configureCandi();
+    StatusCode CANdiConfigStatus = configureCANdi();
 
     // Throw error if configuration fails to apply to devices
     if (motorConfigStatus != StatusCode.OK || encoderStatusCode != StatusCode.OK
-        || candiConfigStatus != StatusCode.OK) {
+        || CANdiConfigStatus != StatusCode.OK) {
       throw new IllegalStateException("Haha ur fucked");
     }
 
@@ -157,13 +129,13 @@ public class OuttakeSubsystem extends SubsystemBase {
     return pivotEncoder.getConfigurator().apply(encoderConfig);
   }
 
-  private StatusCode configureCandi() {
-    final CANdiConfiguration candiConfig = new CANdiConfiguration();
+  private StatusCode configureCANdi() {
+    final CANdiConfiguration CANdiConfig = new CANdiConfiguration();
     // When S1 is floating: pull input high, and is closed when pulled low
-    candiConfig.DigitalInputs
+    CANdiConfig.DigitalInputs
         .withS1FloatState(S1FloatStateValue.PullHigh)
         .withS1CloseState(S1CloseStateValue.CloseWhenLow);
-    return hardstop.getConfigurator().apply(candiConfig);
+    return hardstop.getConfigurator().apply(CANdiConfig);
   }
 
   // check if hard stop limit switch is pressed
