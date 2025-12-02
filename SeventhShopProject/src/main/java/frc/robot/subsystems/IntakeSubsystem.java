@@ -32,16 +32,6 @@ public class IntakeSubsystem extends SubsystemBase {
     leverMotor.setPosition(0.0);
   }
 
-  public void manual(boolean left, boolean right){
-    if(left && !right ){
-      leverMotor.set(-0.1*invert);
-    }else if(!left && right){
-      leverMotor.set(0.1*invert);
-    }else{
-      leverMotor.set(0.0*invert);
-    }
-  }
-
   public void autoSetIntake(boolean left, boolean right){
     if(left && !right ){  
         leverMotor.set(-0.1*invert);
