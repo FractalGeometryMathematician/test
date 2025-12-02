@@ -25,8 +25,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.OuttakeConstants;
 
 public class OuttakeSubsystem extends SubsystemBase {
-  // Motor Kt Signal
-  private StatusSignal<Per<TorqueUnit, CurrentUnit>> motorKt;
+  // Motor Kt (Nm/A)
+  private Per<TorqueUnit, CurrentUnit> motorKt;
 
   // Motor Object (Kraken x60)
   private final TalonFX motor = new TalonFX(OuttakeConstants.motorID, "can");
@@ -53,7 +53,7 @@ public class OuttakeSubsystem extends SubsystemBase {
       throw new IllegalStateException("Haha ur fucked");
     }
 
-    motorKt = motor.getMotorKT();
+    motorKt = motor.getMotorKT().getValue();
   }
 
   private StatusCode configureMotors() {
@@ -155,8 +155,9 @@ public class OuttakeSubsystem extends SubsystemBase {
 
   // Gets the torque applied by motor shaft based on motor kT and current
   private Torque getTorque() {
+    motorKt = motor.getMotorKT().getValue();
     Current torqueCurrent = motor.getTorqueCurrent().getValue();
-    return (Torque) motorKt.getValue().timesDivisor(torqueCurrent);
+    return (Torque) motorKt.timesDivisor(torqueCurrent);
   }
 
   // Gets current arm position from the CANcoder
