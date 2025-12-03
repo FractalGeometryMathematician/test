@@ -177,10 +177,10 @@ public class OuttakeSubsystem extends SubsystemBase {
   }
 
   private void updateLogging() {
-    SmartDashboard.putNumber("Motor/Supply Voltage", getSupplyVoltage().in(Volts));
-    SmartDashboard.putNumber("Motor/Applied Voltage", getMotorVoltage().in(Volts));
-    SmartDashboard.putNumber("Motor/Supply Current", getSupplyCurrent().in(Amps));
-    SmartDashboard.putNumber("Motor/Torque Current", getTorqueCurrent().in(Amps));
+    SmartDashboard.putNumber("Motor/Supply Voltage", GRTUtils.round(getSupplyVoltage().in(Volts), 2));
+    SmartDashboard.putNumber("Motor/Applied Voltage", GRTUtils.round(getMotorVoltage().in(Volts), 2));
+    SmartDashboard.putNumber("Motor/Supply Current", GRTUtils.round(getSupplyCurrent().in(Amps), 2));
+    SmartDashboard.putNumber("Motor/Torque Current", GRTUtils.round(getTorqueCurrent().in(Amps), 2));
     SmartDashboard.putNumber("Motor/Applied Torque", GRTUtils.round(getTorque().in(NewtonMeters), 2));
 
     SmartDashboard.putNumber("Motor/Velocity", GRTUtils.round(getVelocity().in(RPM), 2));
