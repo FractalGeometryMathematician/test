@@ -97,8 +97,8 @@ public class DriveSubsystem extends SubsystemBase {
 
         // Init the differential drive object that drive motor with the lambda functions
         robotDriveController = new DifferentialDrive(
-                leftOutput -> setLeftVelocity(DriveConstants.maxMotorVelocity.times(leftOutput)),
-                rightOutput -> setRightVelocity(DriveConstants.maxMotorVelocity.times(rightOutput)));
+                (leftOutput) -> setLeftVelocity(DriveConstants.maxMotorVelocity.times(leftOutput)),
+                (rightOutput) -> setRightVelocity(DriveConstants.maxMotorVelocity.times(rightOutput)));
     }
 
     // Sets the left motor velocity with PID control
