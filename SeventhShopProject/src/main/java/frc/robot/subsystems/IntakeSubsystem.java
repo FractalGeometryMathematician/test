@@ -75,14 +75,14 @@ public class IntakeSubsystem extends SubsystemBase {
       return;
     }
 
-    if(left && !right ){                            //left pressed, go down
+    if(left && !right){                            //left pressed, go down
       leverMotor.set(-1*magnVel);
       up = false;
 
-    }else if(!left && right){ //right pressed, go up (unless too high already)
+    }else if((!left && right) && (leverMotor.getPosition().getValueAsDouble() < upperLim)){ //right pressed, go up (unless too high already)
       leverMotor.set(1*magnVel);
       up = true;
-      
+
     }else{                                          //none pressed, freeze. alternatively, if going up but above upperLim, also stop
       leverMotor.set(0.0*magnVel);
       leverMotor.setControl(focThing.withPosition(leverMotor.getPosition().getValueAsDouble()));
