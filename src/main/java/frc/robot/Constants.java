@@ -116,8 +116,6 @@ public final class Constants {
     public static final int leadMotorID = 0;
     public static final int harmonyMotorID = 1;
 
-    public static final String canBusName = "can";
-
     // Files are deployed to src/main/deploy
     public static final String[] songFiles = new String[] {
         "nyanCat.chrp",

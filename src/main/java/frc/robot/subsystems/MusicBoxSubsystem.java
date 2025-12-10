@@ -10,8 +10,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.MusicConstants;
 
 public class MusicBoxSubsystem extends SubsystemBase {
-    private final TalonFX leadInstrument = new TalonFX(MusicConstants.leadMotorID, MusicConstants.canBusName);
-    private final TalonFX harmonyInstrument = new TalonFX(MusicConstants.harmonyMotorID, MusicConstants.canBusName);
+    private final TalonFX leadInstrument = new TalonFX(MusicConstants.leadMotorID, "can");
+    private final TalonFX harmonyInstrument = new TalonFX(MusicConstants.harmonyMotorID, "can");
     private final Orchestra orchestra = new Orchestra();
 
     private int selectedSongIndex = 0;
