@@ -17,6 +17,8 @@ import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Timer;
+import static edu.wpi.first.units.Units.*;
+
 
 //mutual vs braking mode
 
@@ -36,6 +38,8 @@ public class IntakeSubsystem extends SubsystemBase {
   private boolean up = false; //current direction of arm
   CurrentLimitsConfigs currLim;
   private PositionTorqueCurrentFOC focThing;
+  private VelocityTorqueCurrentFOC velFOCthing;
+
   
   
 
@@ -63,12 +67,12 @@ public class IntakeSubsystem extends SubsystemBase {
     PID.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     leverMotor.getConfigurator().apply(PID);
     focThing = new PositionTorqueCurrentFOC(0).withSlot(0); //sets FOC object with PID values
+    velFOCthing = new VelocityTorqueCurrentFOC(RotationsPerSecond.of(0)).withSlot(0);
   
   }
 
   public void manual(boolean left, boolean right){      // manual mode
     if(left && right){                              //if both pressed, freeze motor at position, go to auto
-      leverMotor.set(0*magnVel);
       leverMotor.setControl(focThing.withPosition(leverMotor.getPosition().getValueAsDouble()));
       autoOn = true;
       up = false;
@@ -76,15 +80,14 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     if(left && !right){                            //left pressed, go down
-      leverMotor.set(-1*magnVel);
+      leverMotor.setControl(velFOCthing.withVelocity(RotationsPerSecond.of(-1*magnVel)));
       up = false;
 
-    }else if((!left && right) && (leverMotor.getPosition().getValueAsDouble() < upperLim)){ //right pressed, go up (unless too high already)
-      leverMotor.set(1*magnVel);
+    }else if((!left && right) && !(limit.getS1Closed().refresh().getValue())){ //right pressed, go up (unless too high already)
+      leverMotor.setControl(velFOCthing.withVelocity(RotationsPerSecond.of(1*magnVel)));
       up = true;
 
     }else{                                          //none pressed, freeze. alternatively, if going up but above upperLim, also stop
-      leverMotor.set(0.0*magnVel);
       leverMotor.setControl(focThing.withPosition(leverMotor.getPosition().getValueAsDouble()));
       up= false;
     }
@@ -93,7 +96,6 @@ public class IntakeSubsystem extends SubsystemBase {
   public void autoSetIntake(boolean left, boolean right){   //auto mode
 
     if(left && right){                                      //both pressed, freeze motor, go to auto mode
-      leverMotor.set(0*magnVel);
       leverMotor.setControl(focThing.withPosition(leverMotor.getPosition().getValueAsDouble()));
       autoOn = false;
       up = false;
@@ -105,7 +107,7 @@ public class IntakeSubsystem extends SubsystemBase {
         up = false;
       
     }else if(!left && right){
-        leverMotor.setControl(focThing.withPosition(upperLim));   //right pressed, go to up pos
+      leverMotor.setControl(velFOCthing.withVelocity(RotationsPerSecond.of(1*magnVel)));   //right pressed, go to up pos
         up = true;
     }
 
@@ -114,7 +116,6 @@ public class IntakeSubsystem extends SubsystemBase {
   public void moveArm(boolean left, boolean right){
 
     if(limit.getS1Closed().refresh().getValue() && up ){ //check is bool is true or false when pressed. will go up if lim pressed, but not down
-      leverMotor.set(0.0);
       leverMotor.setPosition(upperLim); 
       leverMotor.setControl(focThing.withPosition(upperLim));
       up = false;
