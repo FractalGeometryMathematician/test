@@ -68,14 +68,14 @@ public final class Constants {
 
   public static final class OuttakeConstants {
     // CAN IDs
-    public static final int motorID = 0;
-    public static final int encoderID = 1;
-    public static final int CANdiID = 2;
+    public static final int motorID = 2;
+    public static final int encoderID = 0;
+    public static final int CANdiID = 3;
 
-    public static final ReverseLimitSourceValue limitSwitchPort = ReverseLimitSourceValue.RemoteCANdiS1;
+    public static final ReverseLimitSourceValue limitSwitchPort = ReverseLimitSourceValue.RemoteCANdiS2;
 
     // PID Constants
-    public static final float kG = 5.354004f;
+    public static final float kG = 0f;
     public static final float kS = 0f;
 
     // Designed from arm inertia (0.0229 kg m^2), 8:1 gearing, and Kraken torque
@@ -110,5 +110,15 @@ public final class Constants {
     public static final AngularVelocity maxSafeVelocity = RPM.of(30);
     public static final Angle acceptablePositionError = Degrees.of(3);
     public static final AngularVelocity acceptableVelocityError = RotationsPerSecond.of(1);
+  }
+
+  public static final class MusicConstants {
+    // Files are deployed to src/main/deploy
+    public static final String[] songFiles = new String[] {
+        "nyanCat.chrp",
+        "undertale.chrp",
+        "mii.chrp",
+        "fromTheStart.chrp"
+    };
   }
 }
