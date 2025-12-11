@@ -22,6 +22,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.security.Timestamp;
+
 
 //mutual vs braking mode
 
@@ -32,7 +34,7 @@ public class IntakeSubsystem extends SubsystemBase {
   private CANdi limit = new CANdi(/*insert number */ 3);
   private boolean autoOn = false;
   private final double upperLim = 3.5; //check movearm to change value, 50 is just exorbitantly large random number, but check signage here
-  private double magnVel = 2; //to reverse direction, just change 1 to -1
+  private double magnVel = 0.1; //to reverse direction, just change 1 to -1
   DoublePublisher pos;
   TalonFXConfiguration PID = new TalonFXConfiguration();
   NetworkTableInstance inst;
@@ -42,6 +44,7 @@ public class IntakeSubsystem extends SubsystemBase {
   CurrentLimitsConfigs currLim;
   private PositionTorqueCurrentFOC focThing;
   private VelocityTorqueCurrentFOC velFOCthing;
+  private double haltUntil = 0;
 
   
   
@@ -61,18 +64,25 @@ public class IntakeSubsystem extends SubsystemBase {
     PID.Slot0.kI = 0.1;                                                // config motors
     // PID.Slot0.kV = 1;
     PID.Slot0.kD = 0.01;
-    // PID.Slot0.kG = 0.02;
+    PID.Slot0.kG = 0.02;
+
+    PID.Slot1.kP = 0.2;    // velocity foc
+    PID.Slot1.kI = 0.0;
+    PID.Slot1.kD = 0.0;
+    PID.Slot1.kV = 1.0;   
 
 
     currLim = new CurrentLimitsConfigs()                             // current limits for safety
       .withStatorCurrentLimit(50.0)              
       .withStatorCurrentLimitEnable(true);
     PID.withCurrentLimits(currLim);
+
     PID.MotorOutput.NeutralMode = NeutralModeValue.Brake;          //neutral mode added, will brake automatically
     PID.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+
     leverMotor.getConfigurator().apply(PID);
     focThing = new PositionTorqueCurrentFOC(0).withSlot(0); //sets FOC object with PID values
-    velFOCthing = new VelocityTorqueCurrentFOC(RotationsPerSecond.of(0)).withSlot(0);
+    velFOCthing = new VelocityTorqueCurrentFOC(RotationsPerSecond.of(0)).withSlot(1);
   
   }
 
@@ -81,6 +91,7 @@ public class IntakeSubsystem extends SubsystemBase {
     //   leverMotor.setControl(focThing.withPosition(leverMotor.getPosition().getValueAsDouble()));
     //   autoOn = true;
     //   up = false;
+    //   haltUntil = Timer.getFPGATimestamp() + 0.5;
     //   return;
     // }
 
@@ -99,9 +110,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
     }
     else{                                          //none pressed, freeze. alternatively, if going up but above upperLim, also stop
-      leverMotor.setControl(focThing.withPosition(0));
-
-      leverMotor.set(0);
+      leverMotor.setControl(focThing.withPosition(leverMotor.getPosition().getValueAsDouble()));
       up= false;
     }
   }
@@ -112,6 +121,7 @@ public class IntakeSubsystem extends SubsystemBase {
       leverMotor.setControl(focThing.withPosition(leverMotor.getPosition().getValueAsDouble()));
       autoOn = false;
       up = false;
+      haltUntil = Timer.getFPGATimestamp() + 0.5;
       return;
     }
 
@@ -134,6 +144,9 @@ public class IntakeSubsystem extends SubsystemBase {
     //   up = false;
     // }
 
+    if(Timer.getFPGATimestamp() < haltUntil){
+      return;
+    }
 
 
     if(!autoOn){                                          //go to respective method for movement
