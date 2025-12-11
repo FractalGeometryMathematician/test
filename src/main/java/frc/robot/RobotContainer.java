@@ -19,8 +19,9 @@ public class RobotContainer {
 
   // Subsystems
   private final OuttakeSubsystem m_outtakeSubsystem = new OuttakeSubsystem();
-  private final DriveSubsystem m_driveSubsystem = new DriveSubsystem();
-  private final MusicBoxSubsystem m_musicBoxSubsystem = new MusicBoxSubsystem();
+  // private final DriveSubsystem m_driveSubsystem = new DriveSubsystem();
+  // private final MusicBoxSubsystem m_musicBoxSubsystem = new
+  // MusicBoxSubsystem();
 
   // subsystem used to test the controller bindings
   @SuppressWarnings("unused")
@@ -40,10 +41,10 @@ public class RobotContainer {
             () -> -m_driverController.getR2Axis()));
 
     // Drive base utilizes tank drive controls
-    m_driveSubsystem.setDefaultCommand(
-        m_driveSubsystem.tankDrive(
-            () -> -m_driverController.getLeftY(),
-            () -> -m_driverController.getRightY()));
+    // m_driveSubsystem.setDefaultCommand(
+    // m_driveSubsystem.tankDrive(
+    // () -> -m_driverController.getLeftY(),
+    // () -> -m_driverController.getRightY()));
     // m_controllerTest.setDefaultCommand(
     // m_controllerTest.joystickInput(
     // () -> -m_driverController.getL2Axis(),
@@ -63,12 +64,12 @@ public class RobotContainer {
 
     Trigger robotDisabled = new Trigger(RobotState::isDisabled);
 
-    robotDisabled.and(m_driverController.povUp())
-        .onTrue(m_musicBoxSubsystem.selectNextSong());
-    robotDisabled.and(m_driverController.povDown())
-        .onTrue(m_musicBoxSubsystem.selectPreviousSong());
-    robotDisabled.and(m_driverController.cross())
-        .onTrue(m_musicBoxSubsystem.togglePlayPause());
+    // robotDisabled.and(m_driverController.povUp())
+    // .onTrue(m_musicBoxSubsystem.selectNextSong());
+    // robotDisabled.and(m_driverController.povDown())
+    // .onTrue(m_musicBoxSubsystem.selectPreviousSong());
+    // robotDisabled.and(m_driverController.cross())
+    // .onTrue(m_musicBoxSubsystem.togglePlayPause());
   }
 
   public Command getAutonomousCommand() {
