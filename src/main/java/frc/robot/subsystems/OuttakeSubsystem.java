@@ -128,7 +128,7 @@ public class OuttakeSubsystem extends SubsystemBase {
         // Set braking mode and define pointing up as the positive direction
         .withMotorOutput(
             new MotorOutputConfigs()
-                .withInverted(InvertedValue.CounterClockwise_Positive)
+                .withInverted(InvertedValue.Clockwise_Positive)
                 .withNeutralMode(NeutralModeValue.Brake))
         // Add limit switch connected to CANdi as downward hard stop
         .withHardwareLimitSwitch(
@@ -162,7 +162,8 @@ public class OuttakeSubsystem extends SubsystemBase {
     // Add discontinuity point and offset
     final CANcoderConfiguration encoderConfig = new CANcoderConfiguration().withMagnetSensor(new MagnetSensorConfigs()
         .withAbsoluteSensorDiscontinuityPoint(pivotDiscontinuityPoint)
-        .withMagnetOffset(OuttakeConstants.encoderMagnetOffset));
+        .withMagnetOffset(OuttakeConstants.encoderMagnetOffset)
+        .withSensorDirection(SensorDirectionValue.Clockwise_Positive));
     return pivotEncoder.getConfigurator().apply(encoderConfig);
   }
 
@@ -297,7 +298,6 @@ public class OuttakeSubsystem extends SubsystemBase {
   }
 
   // Directly set the motor voltage (preferred over DutyCycle for repeatability)
-  @SuppressWarnings("unused")
   public void setVoltage(Voltage setVoltage) {
     // If at hard or soft stop, do not move if desired motion is into the stop
     if (isAtHardStop() && setVoltage.in(Volts) < 0) {
@@ -305,6 +305,20 @@ public class OuttakeSubsystem extends SubsystemBase {
     } else if (isAtForwardSoftStop() && setVoltage.in(Volts) > 0) {
       setVoltage = Volts.of(0);
     }
+
+    // Control motor voltage
+    motor.setControl(voltageRequest.withOutput(setVoltage));
+  }
+
+  public void setVoltage(double setValue) {
+    // If at hard or soft stop, do not move if desired motion is into the stop
+    if (isAtHardStop() && setValue < 0) {
+      setValue = 0;
+    } else if (isAtForwardSoftStop() && setValue > 0) {
+      setValue = 0;
+    }
+
+    Voltage setVoltage = Volts.of(12 * setValue);
 
     // Control motor voltage
     motor.setControl(voltageRequest.withOutput(setVoltage));
@@ -318,7 +332,7 @@ public class OuttakeSubsystem extends SubsystemBase {
       setPosition(position);
     });
     // wait for motor to go to position
-    Command waitForPosition = Commands.waitUntil(() -> atSetPosition());
+    Command waitForPosition = Commands.waitUntil(() -> atSetPosition()).withTimeout(Seconds.of(5));
 
     // return a blocking command if blocking is true
     if (blocking) {
@@ -363,11 +377,15 @@ public class OuttakeSubsystem extends SubsystemBase {
   // Returns command to go the next highest position from the current position
   private Command selectStepUpCommand() {
     Angle currentPos = getPosition();
+    DataLogManager.log(currentPos.in(Degrees) + " degrees");
     if (currentPos.lt(OuttakeConstants.topBoxAngle) && !atPosition(OuttakeConstants.topBoxAngle)) {
+      DataLogManager.log("1");
       return goToTopBox(true);
     } else if (currentPos.lt(OuttakeConstants.homeAngle) && !atPosition(OuttakeConstants.homeAngle)) {
+      DataLogManager.log("2");
       return goToHome(true);
     } else {
+      DataLogManager.log("3");
       return goToBottomBox(true);
     }
   }
@@ -381,11 +399,15 @@ public class OuttakeSubsystem extends SubsystemBase {
   // Returns command to go the next lowest position from the current position
   private Command selectStepDownCommand() {
     Angle currentPos = getPosition();
+    DataLogManager.log(currentPos.in(Degrees) + " degrees");
     if (currentPos.gt(OuttakeConstants.topBoxAngle) && !atPosition(OuttakeConstants.topBoxAngle)) {
+      DataLogManager.log("4");
       return goToTopBox(true);
     } else if (currentPos.gt(OuttakeConstants.bottomBoxAngle) && !atPosition(OuttakeConstants.bottomBoxAngle)) {
+      DataLogManager.log("5");
       return goToBottomBox(true);
     } else {
+      DataLogManager.log("6");
       return goToHome(true);
     }
   }
@@ -410,6 +432,22 @@ public class OuttakeSubsystem extends SubsystemBase {
 
       // sets the desired velocity of the motor
       setVelocity(desiredVelocity);
+    });
+  }
+
+  // Controls motor voltage with two inputs, one which sets negative voltage and
+  // one sets positive voltage
+  public Command VoltageControl(DoubleSupplier negativeInput, DoubleSupplier positiveInput) {
+    return this.run(() -> {
+      // divides by ten to decrease max speed
+      double positiveValue = positiveInput.getAsDouble() / 10;
+      double negativeValue = negativeInput.getAsDouble() / 10;
+      // Squares the two inputs to make the lower values more sensitive and combines
+      // the two values
+      double shapedInput = ((positiveValue * positiveValue) - (negativeValue * negativeValue)); // bad name wth
+
+      // sets the desired voltage of the motor
+      setVoltage(shapedInput);
     });
   }
 
@@ -498,6 +536,11 @@ public class OuttakeSubsystem extends SubsystemBase {
     hardstopSim.setS1State(hardstopValue);
     talonFXSim.setReverseLimit(simHardstopTriggered);
 
+    updateLogging();
+  }
+
+  @Override
+  public void periodic() {
     updateLogging();
   }
 }
