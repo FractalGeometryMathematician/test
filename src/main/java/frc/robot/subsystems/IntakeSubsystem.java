@@ -37,7 +37,7 @@ public class IntakeSubsystem extends SubsystemBase {
   TalonFXConfiguration PID = new TalonFXConfiguration();
   NetworkTableInstance inst;
   NetworkTable table;
-  private final double downPos = -1; //lower limit, in case angle of lever is lower. will be stopped by the limit anyway
+  private final double downPos = 1; //lower limit, in case angle of lever is lower. will be stopped by the limit anyway
   private boolean up = false; //current direction of arm
   CurrentLimitsConfigs currLim;
   private PositionTorqueCurrentFOC focThing;
@@ -57,11 +57,11 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   private void config(){
-    PID.Slot0.kP = 1;                                                //fix these guys somehow
-    PID.Slot0.kI = 0.0;                                                // config motors
-    PID.Slot0.kV = 1;
+    PID.Slot0.kP = 3;                                                //fix these guys somehow
+    PID.Slot0.kI = 0.1;                                                // config motors
+    // PID.Slot0.kV = 1;
     PID.Slot0.kD = 0.01;
-    PID.Slot0.kG = 0.02;
+    // PID.Slot0.kG = 0.02;
 
 
     currLim = new CurrentLimitsConfigs()                             // current limits for safety
@@ -86,16 +86,21 @@ public class IntakeSubsystem extends SubsystemBase {
 
     if(left && !right){                            //left pressed, go down
       // leverMotor.setControl(velFOCthing.withVelocity(RotationsPerSecond.of(-1*magnVel)));
-      leverMotor.set(-0.1);
+      leverMotor.setControl(focThing.withPosition(upperLim));
+      // leverMotor.set(-0.1);
       up = false;
 
     }else if((!left && right)){ //&& !(limit.getS1Closed().refresh().getValue())){ //right pressed, go up (unless too high already)
       // leverMotor.setControl(velFOCthing.withVelocity(RotationsPerSecond.of(1*magnVel)));
-      leverMotor.set(0.1);
+      leverMotor.setControl(focThing.withPosition(downPos));
+
+      // leverMotor.set(0.1);
       up = true;
 
     }
     else{                                          //none pressed, freeze. alternatively, if going up but above upperLim, also stop
+      leverMotor.setControl(focThing.withPosition(0));
+
       leverMotor.set(0);
       up= false;
     }
@@ -130,7 +135,6 @@ public class IntakeSubsystem extends SubsystemBase {
     // }
 
 
-    pos.set(leverMotor.getPosition().getValueAsDouble()); //publish position of lever to network table
 
     if(!autoOn){                                          //go to respective method for movement
       manual(left, right);
@@ -144,6 +148,8 @@ public class IntakeSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     SmartDashboard.putNumber("lever motor position",leverMotor.getPosition().getValueAsDouble());
+    pos.set(leverMotor.getPosition().getValueAsDouble()); //publish position of lever to network table
+
   }
 
 
