@@ -22,6 +22,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.security.Timestamp;
+
 
 //mutual vs braking mode
 
@@ -42,6 +44,7 @@ public class IntakeSubsystem extends SubsystemBase {
   CurrentLimitsConfigs currLim;
   private PositionTorqueCurrentFOC focThing;
   private VelocityTorqueCurrentFOC velFOCthing;
+  private double haltUntil = 0;
 
   
   
@@ -88,6 +91,7 @@ public class IntakeSubsystem extends SubsystemBase {
     //   leverMotor.setControl(focThing.withPosition(leverMotor.getPosition().getValueAsDouble()));
     //   autoOn = true;
     //   up = false;
+    //   haltUntil = Timer.getFPGATimestamp() + 0.5;
     //   return;
     // }
 
@@ -114,6 +118,7 @@ public class IntakeSubsystem extends SubsystemBase {
       leverMotor.setControl(focThing.withPosition(leverMotor.getPosition().getValueAsDouble()));
       autoOn = false;
       up = false;
+      haltUntil = Timer.getFPGATimestamp() + 0.5;
       return;
     }
 
@@ -136,6 +141,9 @@ public class IntakeSubsystem extends SubsystemBase {
     //   up = false;
     // }
 
+    if(Timer.getFPGATimestamp() < haltUntil){
+      return;
+    }
 
     pos.set(leverMotor.getPosition().getValueAsDouble()); //publish position of lever to network table
 
