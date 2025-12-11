@@ -96,7 +96,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
     }
     else{                                          //none pressed, freeze. alternatively, if going up but above upperLim, also stop
-      leverMotor.set(0);
+      leverMotor.setControl(focThing.withPosition(leverMotor.getPosition().getValueAsDouble()));
       up= false;
     }
   }
