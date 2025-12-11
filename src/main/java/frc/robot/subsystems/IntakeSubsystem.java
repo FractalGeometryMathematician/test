@@ -28,8 +28,8 @@ import static edu.wpi.first.units.Units.*;
 
 public class IntakeSubsystem extends SubsystemBase {
   
-  private TalonFX leverMotor = new TalonFX( /*insert numer */ 3, "can");
-  private CANdi limit = new CANdi(/*insert number */ 2);
+  private TalonFX leverMotor = new TalonFX( /*insert numer */ 1, "can");
+  private CANdi limit = new CANdi(/*insert number */ 3);
   private boolean autoOn = false;
   private final double upperLim = 3.5; //check movearm to change value, 50 is just exorbitantly large random number, but check signage here
   private double magnVel = 0.5; //to reverse direction, just change 1 to -1
@@ -57,11 +57,13 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   private void config(){
-    PID.Slot0.kP = 0.01;                                                //fix these guys somehow
+    PID.Slot0.kP = 1;                                                //fix these guys somehow
     PID.Slot0.kI = 0.0;                                                // config motors
-    PID.Slot0.kV = 0.0;
+    PID.Slot0.kV = 1;
     PID.Slot0.kD = 0.01;
     PID.Slot0.kG = 0.02;
+
+
     currLim = new CurrentLimitsConfigs()                             // current limits for safety
       .withStatorCurrentLimit(50.0)              
       .withStatorCurrentLimitEnable(true);
@@ -75,23 +77,26 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   public void manual(boolean left, boolean right){      // manual mode
-    if(left && right){                              //if both pressed, freeze motor at position, go to auto
-      leverMotor.setControl(focThing.withPosition(leverMotor.getPosition().getValueAsDouble()));
-      autoOn = true;
-      up = false;
-      return;
-    }
+    // if(left && right){                              //if both pressed, freeze motor at position, go to auto
+    //   leverMotor.setControl(focThing.withPosition(leverMotor.getPosition().getValueAsDouble()));
+    //   autoOn = true;
+    //   up = false;
+    //   return;
+    // }
 
     if(left && !right){                            //left pressed, go down
-      leverMotor.setControl(velFOCthing.withVelocity(RotationsPerSecond.of(-1*magnVel)));
+      // leverMotor.setControl(velFOCthing.withVelocity(RotationsPerSecond.of(-1*magnVel)));
+      leverMotor.set(-0.1);
       up = false;
 
-    }else if((!left && right) && !(limit.getS1Closed().refresh().getValue())){ //right pressed, go up (unless too high already)
-      leverMotor.setControl(velFOCthing.withVelocity(RotationsPerSecond.of(1*magnVel)));
+    }else if((!left && right)){ //&& !(limit.getS1Closed().refresh().getValue())){ //right pressed, go up (unless too high already)
+      // leverMotor.setControl(velFOCthing.withVelocity(RotationsPerSecond.of(1*magnVel)));
+      leverMotor.set(0.1);
       up = true;
 
-    }else{                                          //none pressed, freeze. alternatively, if going up but above upperLim, also stop
-      leverMotor.setControl(focThing.withPosition(leverMotor.getPosition().getValueAsDouble()));
+    }
+    else{                                          //none pressed, freeze. alternatively, if going up but above upperLim, also stop
+      leverMotor.set(0);
       up= false;
     }
   }
@@ -118,11 +123,11 @@ public class IntakeSubsystem extends SubsystemBase {
 
   public void moveArm(boolean left, boolean right){
 
-    if(limit.getS1Closed().refresh().getValue() && up ){ //check is bool is true or false when pressed. will go up if lim pressed, but not down
-      leverMotor.setPosition(upperLim); 
-      leverMotor.setControl(focThing.withPosition(upperLim));
-      up = false;
-    }
+    // if(limit.getS1Closed().refresh().getValue() && up ){ //check is bool is true or false when pressed. will go up if lim pressed, but not down
+    //   leverMotor.setPosition(upperLim); 
+    //   leverMotor.setControl(focThing.withPosition(upperLim));
+    //   up = false;
+    // }
 
 
     pos.set(leverMotor.getPosition().getValueAsDouble()); //publish position of lever to network table

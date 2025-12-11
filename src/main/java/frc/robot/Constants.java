@@ -9,6 +9,7 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.RPM;
+import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
@@ -97,7 +98,7 @@ public final class Constants {
     public static final Angle forwardSoftLimitAngle = Degrees.of(120);
 
     // Hardware Constants
-    public static final Angle encoderMagnetOffset = Degrees.of(0);
+    public static final Angle encoderMagnetOffset = Rotations.of(-0.012);
     public static final float mechGearRatio = 8.0f;
     public static final AngularVelocity approximateMaxVelocity = RPM.of(5000 / mechGearRatio);
     public static final MomentOfInertia armMomentOfInertia = KilogramSquareMeters.of(0.0228579824); // Calculated from
