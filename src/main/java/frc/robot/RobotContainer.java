@@ -10,7 +10,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
-import frc.robot.subsystems.ControllerTest;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.MusicBoxSubsystem;
 import frc.robot.subsystems.OuttakeSubsystem;
@@ -22,10 +21,6 @@ public class RobotContainer {
   // private final DriveSubsystem m_driveSubsystem = new DriveSubsystem();
   // private final MusicBoxSubsystem m_musicBoxSubsystem = new
   // MusicBoxSubsystem();
-
-  // subsystem used to test the controller bindings
-  @SuppressWarnings("unused")
-  private final ControllerTest m_controllerTest = new ControllerTest();
 
   // Driver controller
   private final CommandPS5Controller m_driverController = new CommandPS5Controller(
@@ -45,16 +40,6 @@ public class RobotContainer {
     // m_driveSubsystem.tankDrive(
     // () -> -m_driverController.getLeftY(),
     // () -> -m_driverController.getRightY()));
-    // m_controllerTest.setDefaultCommand(
-    // m_controllerTest.joystickInput(
-    // () -> -m_driverController.getL2Axis(),
-    // () -> -m_driverController.getR2Axis(),
-    // () -> -m_driverController.getRightX(),
-    // () -> -m_driverController.getRightY(),
-    // () -> -m_driverController.getLeftX(),
-    // () -> -m_driverController.getLeftY(),
-    // () -> m_driverController.povDown().getAsBoolean(),
-    // () -> m_driverController.povUp().getAsBoolean()));
   }
 
   private void configureBindings() {
