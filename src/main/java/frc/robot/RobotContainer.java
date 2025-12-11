@@ -12,7 +12,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.subsystems.DriveSubsystem;
-import frc.robot.subsystems.MusicBoxSubsystem;
+// import frc.robot.subsystems.MusicBoxSubsystem;
 import frc.robot.subsystems.OuttakeSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 
@@ -20,11 +20,11 @@ public class RobotContainer {
 
   // Subsystems
   private final IntakeSubsystem m_intakeSubsystem = new IntakeSubsystem();
-  private final OuttakeSubsystem m_outtakeSubsystem = new OuttakeSubsystem();
-  // private final DriveSubsystem m_driveSubsystem = new DriveSubsystem();
+  // private final OuttakeSubsystem m_outtakeSubsystem = new OuttakeSubsystem();
+  private final DriveSubsystem m_driveSubsystem = new DriveSubsystem();
   // private final MusicBoxSubsystem m_musicBoxSubsystem = new
   // MusicBoxSubsystem();
-  
+
   // Intake Controller Booleans
   public boolean l1;
   public boolean r1;
@@ -40,27 +40,26 @@ public class RobotContainer {
   private void configureBindings() {
     // Drive base utilizes tank drive controls
     m_driveSubsystem.setDefaultCommand(
-      m_driveSubsystem.tankDrive(
-          () -> -m_driverController.getRightY(),
-          () -> -m_driverController.getLeftY()));
+        m_driveSubsystem.tankDrive(
+            () -> -m_driverController.getRightY(),
+            () -> -m_driverController.getLeftY()));
 
     m_intakeSubsystem.setDefaultCommand(new RunCommand(() -> {
       this.l1 = m_driverController.L1().getAsBoolean(); // Left Y-axis for PS5 controller
       this.r1 = m_driverController.R1().getAsBoolean();
       m_intakeSubsystem.moveArm(l1, r1);
-      
-    }, m_intakeSubsystem));
 
+    }, m_intakeSubsystem));
 
     // D-Pad used to control step up and step down
     // m_driverController.povUp().onTrue(m_outtakeSubsystem.stepUp());
     // m_driverController.povDown().onTrue(m_outtakeSubsystem.stepDown());
-    
+
     // Outtake uses velocity control with triggers
     // m_outtakeSubsystem.setDefaultCommand(
-    //     m_outtakeSubsystem.VelocityControl(
-    //         () -> -m_driverController.getL2Axis(),
-    //         () -> -m_driverController.getR2Axis()));
+    // m_outtakeSubsystem.VelocityControl(
+    // () -> -m_driverController.getL2Axis(),
+    // () -> -m_driverController.getR2Axis()));
 
     // Only use music box when robot is disabled
     // Trigger robotDisabled = new Trigger(RobotState::isDisabled);
