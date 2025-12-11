@@ -5,6 +5,7 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -17,6 +18,8 @@ import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 import static edu.wpi.first.units.Units.*;
 
 
@@ -132,6 +135,10 @@ public class IntakeSubsystem extends SubsystemBase {
       autoSetIntake(left, right);
     }
 
+  }
+  @Override
+  public void periodic() {
+    SmartDashboard.putNumber("lever motor position",leverMotor.getPosition().getValueAsDouble());
   }
 
 

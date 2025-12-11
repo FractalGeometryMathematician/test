@@ -15,7 +15,7 @@ import frc.robot.subsystems.OuttakeSubsystem;
 public class RobotContainer {
 
   // Subsystems
-  private final OuttakeSubsystem m_outtakeSubsystem = new OuttakeSubsystem();
+  // private final OuttakeSubsystem m_outtakeSubsystem = new OuttakeSubsystem();
   private final DriveSubsystem m_driveSubsystem = new DriveSubsystem();
 
   // subsystem used to test the controller bindings
@@ -30,16 +30,16 @@ public class RobotContainer {
     configureBindings();
 
     // Outtake uses velocity control with triggers
-    m_outtakeSubsystem.setDefaultCommand(
-        m_outtakeSubsystem.VelocityControl(
-            () -> -m_driverController.getL2Axis(),
-            () -> -m_driverController.getR2Axis()));
+    // m_outtakeSubsystem.setDefaultCommand(
+    //     m_outtakeSubsystem.VelocityControl(
+    //         () -> -m_driverController.getL2Axis(),
+    //         () -> -m_driverController.getR2Axis()));
 
     // Drive base utilizes tank drive controls
     m_driveSubsystem.setDefaultCommand(
         m_driveSubsystem.tankDrive(
-            () -> -m_driverController.getLeftY(),
-            () -> -m_driverController.getRightY()));
+            () -> -m_driverController.getRightY(),
+            () -> -m_driverController.getLeftY()));
     // m_controllerTest.setDefaultCommand(
     // m_controllerTest.joystickInput(
     // () -> -m_driverController.getL2Axis(),
@@ -54,8 +54,8 @@ public class RobotContainer {
 
   private void configureBindings() {
     // D-Pad used to control step up and step down
-    m_driverController.povUp().onTrue(m_outtakeSubsystem.stepUp());
-    m_driverController.povDown().onTrue(m_outtakeSubsystem.stepDown());
+    // m_driverController.povUp().onTrue(m_outtakeSubsystem.stepUp());
+    // m_driverController.povDown().onTrue(m_outtakeSubsystem.stepDown());
   }
 
   public Command getAutonomousCommand() {

@@ -43,10 +43,10 @@ public final class Constants {
 
   public static final class DriveConstants {
     // CAN IDs
-    public static final int leftLeaderID = 0;
-    public static final int leftFollowerID = 1;
-    public static final int rightLeaderID = 2;
-    public static final int rightFollowerID = 3;
+    public static final int leftLeaderID = 12;
+    public static final int leftFollowerID = 7;
+    public static final int rightLeaderID = 11;
+    public static final int rightFollowerID = 8;
 
     // PID Constants
     public static final float kP = 0.0f;
