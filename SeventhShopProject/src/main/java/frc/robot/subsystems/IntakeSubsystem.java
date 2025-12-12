@@ -179,7 +179,7 @@ public class IntakeSubsystem extends SubsystemBase {
       
     }else if(!left && right){
       
-        leverMotor.setControl(slo.withPosition(upperLim));   //right pressed, go to up pos
+        leverMotor.setControl(slo.withPosition(upperLim));   //right pressed, go to up pos // see to turn this to normavel
         up = true;
         holdPos = upperLim;
       
