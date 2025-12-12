@@ -30,8 +30,8 @@ import java.security.Timestamp;
 
 public class IntakeSubsystem extends SubsystemBase {
   
-  private TalonFX leverMotor = new TalonFX( /*insert numer */ 1, "can");
-  private CANdi limit = new CANdi(/*insert number */ 3);
+  private TalonFX leverMotor = new TalonFX( /*insert numer */ 1 "can");
+  private CANdi limit = new CANdi(/*insert number */ 4);
   private boolean autoOn = false;
   private final double upperLim = 3.5; //check movearm to change value, 50 is just exorbitantly large random number, but check signage here
   private double magnVel = 0.1; //to reverse direction, just change 1 to -1
