@@ -40,9 +40,9 @@ public class RobotContainer {
   private void configureBindings() {
     // Drive base utilizes tank drive controls
     m_driveSubsystem.setDefaultCommand(
-      m_driveSubsystem.arcadeDrive(
-          () -> -m_driverController.getLeftY(),
-          () -> -m_driverController.getLeftX()));
+        m_driveSubsystem.arcadeDrive(
+            () -> -m_driverController.getLeftY(),
+            () -> -m_driverController.getLeftX()));
 
     m_intakeSubsystem.setDefaultCommand(new RunCommand(() -> {
       this.l1 = m_driverController.L1().getAsBoolean(); // Left Y-axis for PS5 controller
@@ -57,7 +57,7 @@ public class RobotContainer {
 
     // Outtake uses velocity control with triggers
     m_outtakeSubsystem.setDefaultCommand(
-        m_outtakeSubsystem.VoltageControl(
+        m_outtakeSubsystem.valueControl(
             () -> -m_driverController.getL2Axis(),
             () -> -m_driverController.getR2Axis()));
 

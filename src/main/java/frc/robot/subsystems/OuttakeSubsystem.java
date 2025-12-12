@@ -22,6 +22,7 @@ import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.*;
+import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VoltageOut;
@@ -47,6 +48,7 @@ public class OuttakeSubsystem extends SubsystemBase {
   // TalonFX Control Requests (utilizing FOC)
   final PositionTorqueCurrentFOC posRequest = new PositionTorqueCurrentFOC(Rotations.of(0)).withSlot(0);
   final VelocityTorqueCurrentFOC velRequest = new VelocityTorqueCurrentFOC(RPM.of(0)).withSlot(1);
+  final DutyCycleOut dutyCycleRequest = new DutyCycleOut(0);
   final VoltageOut voltageRequest = new VoltageOut(0.0);
 
   // Encoder Object (WCP ThroughBore Encoder Powered by CANcoder)
@@ -96,9 +98,10 @@ public class OuttakeSubsystem extends SubsystemBase {
     motorKt = motor.getMotorKT().getValue();
     configNT();
   }
+
   public void configPID(double p, double i, double d, double ff) {
 
-    Slot0Configs slot0Configs = new Slot0Configs(); //used to store and update PID values
+    Slot0Configs slot0Configs = new Slot0Configs(); // used to store and update PID values
     slot0Configs.kP = p;
     slot0Configs.kI = i;
     slot0Configs.kD = d;
@@ -108,27 +111,27 @@ public class OuttakeSubsystem extends SubsystemBase {
 
     motor.getConfigurator().apply(slot0Configs);
   }
-  private void configNT(){
+
+  private void configNT() {
     NetworkTableInstance.getDefault().getTable("outtakeNTDebug")
-            .getEntry("PIDF")
-            .setDoubleArray(
-                new double[] {
-                  OuttakeConstants.pos_kP,
-                  OuttakeConstants.pos_kI,
-                  OuttakeConstants.pos_kD,
-                  OuttakeConstants.kS
-                }
-            );
+        .getEntry("PIDF")
+        .setDoubleArray(
+            new double[] {
+                OuttakeConstants.pos_kP,
+                OuttakeConstants.pos_kI,
+                OuttakeConstants.pos_kD,
+                OuttakeConstants.kS
+            });
     NetworkTableInstance.getDefault().getTable("outtakeNTDebug").addListener(
-             "PIDF",
-            EnumSet.of(NetworkTableEvent.Kind.kValueAll),
-            (table, key, event) -> {
-                double[] pidf = event.valueData.value.getDoubleArray();
-                configPID(pidf[0], pidf[1], pidf[2], pidf[3]);
-            }
-        );
+        "PIDF",
+        EnumSet.of(NetworkTableEvent.Kind.kValueAll),
+        (table, key, event) -> {
+          double[] pidf = event.valueData.value.getDoubleArray();
+          configPID(pidf[0], pidf[1], pidf[2], pidf[3]);
+        });
 
   }
+
   private StatusCode configureMotors() {
     // Set PID values for position control
     final Slot0Configs positionPIDConfigs = new Slot0Configs()
@@ -356,11 +359,21 @@ public class OuttakeSubsystem extends SubsystemBase {
       setValue = 0;
     }
 
-    Voltage setVoltage = Volts.of(1.2 * setValue);
+    Voltage setVoltage = Volts.of(12 * setValue);
     DataLogManager.log(setVoltage.toLongString());
 
     // Control motor voltage
     motor.setControl(voltageRequest.withOutput(setVoltage));
+  }
+
+  public void setDutyCycle(double setPercent) {
+    if (isAtHardStop() && setPercent < 0) {
+      setPercent = 0;
+    } else if (isAtForwardSoftStop() && setPercent > 0) {
+      setPercent = 0;
+    }
+
+    motor.setControl(dutyCycleRequest.withOutput(setPercent));
   }
 
   // Returns a command that goes to specific point and waits if blocking is set to
@@ -483,6 +496,22 @@ public class OuttakeSubsystem extends SubsystemBase {
       DataLogManager.log(shapedInput + " %");
       // sets the desired voltage of the motor
       setVoltage(shapedInput);
+    });
+  }
+
+  public Command valueControl(DoubleSupplier negativeInput, DoubleSupplier positiveInput) {
+    return this.run(() -> {
+
+      // divides by ten to decrease max speed
+      double positiveValue = positiveInput.getAsDouble();
+      double negativeValue = negativeInput.getAsDouble();
+      // Squares the two inputs to make the lower values more sensitive and combines
+      // the two values
+      double shapedInput = ((positiveValue * positiveValue) - (negativeValue * negativeValue)) / 10; // bad name wth
+
+      DataLogManager.log(shapedInput + " %");
+      // sets the desired voltage of the motor
+      setDutyCycle(shapedInput);
     });
   }
 
