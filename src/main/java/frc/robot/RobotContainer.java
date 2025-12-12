@@ -56,9 +56,9 @@ public class RobotContainer {
 
   private void configureBindings() {
     m_driveSubsystem.setDefaultCommand(
-      m_driveSubsystem.tankDrive(
-          () -> -m_driverController.getRightY(),
-          () -> -m_driverController.getLeftY()));
+      m_driveSubsystem.arcadeDrive(
+          () -> -m_driverController.getLeftY(),
+          () -> -m_driverController.getLeftX()));
 
     m_intakeSubsystem.setDefaultCommand(new RunCommand(() -> {
       this.l1 = m_driverController.L1().getAsBoolean(); // Left Y-axis for PS5 controller
