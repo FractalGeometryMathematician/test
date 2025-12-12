@@ -42,7 +42,7 @@ public class RobotContainer {
     m_driveSubsystem.setDefaultCommand(
         m_driveSubsystem.arcadeDrive(
             () -> -m_driverController.getLeftY(),
-            () -> -m_driverController.getLeftX()));
+            () -> -m_driverController.getRightX()));
 
     m_intakeSubsystem.setDefaultCommand(new RunCommand(() -> {
       this.l1 = m_driverController.L1().getAsBoolean(); // Left Y-axis for PS5 controller
@@ -52,14 +52,13 @@ public class RobotContainer {
     }, m_intakeSubsystem));
 
     // D-Pad used to control step up and step down
-    m_driverController.povUp().onTrue(m_outtakeSubsystem.stepUp());
-    m_driverController.povDown().onTrue(m_outtakeSubsystem.stepDown());
+    // m_driverController.povUp().onTrue(m_outtakeSubsystem.stepUp());
+    // m_driverController.povDown().onTrue(m_outtakeSubsystem.stepDown());
 
     // Outtake uses velocity control with triggers
     m_outtakeSubsystem.setDefaultCommand(
         m_outtakeSubsystem.valueControl(
-            () -> -m_driverController.getL2Axis(),
-            () -> -m_driverController.getR2Axis()));
+            () -> m_driverController.getL2Axis(), () -> m_driverController.getR2Axis()));
 
     // Only use music box when robot is disabled
     // Trigger robotDisabled = new Trigger(RobotState::isDisabled);

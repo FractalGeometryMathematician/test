@@ -65,11 +65,10 @@ public class OuttakeSubsystem extends SubsystemBase {
   public OuttakeSubsystem() {
     StatusCode motorConfigStatus = configureMotors();
     StatusCode encoderStatusCode = configureEncoder();
-    StatusCode CANdiConfigStatus = configureCANdi();
+    // StatusCode CANdiConfigStatus = configureCANdi();
 
     // Throw error if configuration fails to apply to devices
-    if (motorConfigStatus != StatusCode.OK || encoderStatusCode != StatusCode.OK
-        || CANdiConfigStatus != StatusCode.OK) {
+    if (motorConfigStatus != StatusCode.OK || encoderStatusCode != StatusCode.OK) {
       throw new IllegalStateException("Haha ur fucked");
     }
 
@@ -88,11 +87,6 @@ public class OuttakeSubsystem extends SubsystemBase {
     SmartDashboard.putData("Simulation/Pivot", mechanism);
 
     updateLogging();
-
-    // create a trigger based on hardstop limit switch and reset encoder when limit
-    // switch triggered
-    Trigger hardStopTrigger = new Trigger(this::isAtHardStop);
-    hardStopTrigger.onTrue(this.runOnce(() -> setEncoder(OuttakeConstants.reverseSoftLimitAngle)));
 
     // update motor Kt value
     motorKt = motor.getMotorKT().getValue();
@@ -170,18 +164,18 @@ public class OuttakeSubsystem extends SubsystemBase {
                 .withInverted(InvertedValue.Clockwise_Positive)
                 .withNeutralMode(NeutralModeValue.Brake))
         // Add limit switch connected to CANdi as downward hard stop
-        .withHardwareLimitSwitch(
-            new HardwareLimitSwitchConfigs()
-                .withReverseLimitEnable(true)
-                .withReverseLimitSource(OuttakeConstants.limitSwitchPort)
-                .withReverseLimitRemoteSensorID(OuttakeConstants.CANdiID))
+        // .withHardwareLimitSwitch(
+        // new HardwareLimitSwitchConfigs()
+        // .withReverseLimitEnable(true)
+        // .withReverseLimitSource(OuttakeConstants.limitSwitchPort)
+        // .withReverseLimitRemoteSensorID(OuttakeConstants.CANdiID))
         // Set soft limits on either end of the arm's range of movement
-        .withSoftwareLimitSwitch(
-            new SoftwareLimitSwitchConfigs()
-                .withForwardSoftLimitEnable(true)
-                .withReverseSoftLimitEnable(true)
-                .withReverseSoftLimitThreshold(OuttakeConstants.reverseSoftLimitAngle)
-                .withForwardSoftLimitThreshold(OuttakeConstants.forwardSoftLimitAngle))
+        // .withSoftwareLimitSwitch(
+        // new SoftwareLimitSwitchConfigs()
+        // .withForwardSoftLimitEnable(true)
+        // .withReverseSoftLimitEnable(true)
+        // .withReverseSoftLimitThreshold(OuttakeConstants.reverseSoftLimitAngle)
+        // .withForwardSoftLimitThreshold(OuttakeConstants.forwardSoftLimitAngle))
         // Cap stator current
         .withCurrentLimits(
             new CurrentLimitsConfigs()
@@ -223,7 +217,7 @@ public class OuttakeSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("Motor/Applied Torque", GRTUtils.round(getTorque().in(NewtonMeters), 2));
 
     SmartDashboard.putNumber("Motor/Velocity", GRTUtils.round(getVelocity().in(RPM), 2));
-    SmartDashboard.putNumber("Motor/Absolute Position", GRTUtils.round(getPosition().in(Degrees), 2));
+    SmartDashboard.putNumber("Motor/Absolute Position", GRTUtils.round(getPosition().in(Rotations), 2));
 
     SmartDashboard.putString("PID/Control Mode", motor.getControlMode().toString());
     SmartDashboard.putNumber("PID/Setpoint", GRTUtils.round(motor.getClosedLoopReference().getValueAsDouble(), 2)); // RPS
@@ -367,12 +361,6 @@ public class OuttakeSubsystem extends SubsystemBase {
   }
 
   public void setDutyCycle(double setPercent) {
-    if (isAtHardStop() && setPercent < 0) {
-      setPercent = 0;
-    } else if (isAtForwardSoftStop() && setPercent > 0) {
-      setPercent = 0;
-    }
-
     motor.setControl(dutyCycleRequest.withOutput(setPercent));
   }
 
@@ -392,6 +380,12 @@ public class OuttakeSubsystem extends SubsystemBase {
     } else {
       return baseCommand;
     }
+  }
+
+  public Command ntPos() {
+    return this.run(() -> {
+      setPosition(Rotations.of(SmartDashboard.getNumber("Movm/Pos", 0)));
+    });
   }
 
   // Command that sets arm to home position and waits if blocking is true
@@ -507,7 +501,7 @@ public class OuttakeSubsystem extends SubsystemBase {
       double negativeValue = negativeInput.getAsDouble();
       // Squares the two inputs to make the lower values more sensitive and combines
       // the two values
-      double shapedInput = ((positiveValue * positiveValue) - (negativeValue * negativeValue)) / 10; // bad name wth
+      double shapedInput = (positiveValue - negativeValue) / 50; // bad name wth
 
       DataLogManager.log(shapedInput + " %");
       // sets the desired voltage of the motor

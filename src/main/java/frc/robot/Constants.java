@@ -81,7 +81,7 @@ public final class Constants {
     // Designed from arm inertia (0.0229 kg m^2), 8:1 gearing, and Kraken torque
     // constant (9.37 N m / 483 A). Targets ~0.5 s settling with ~1% overshoot.
     public static final float pos_kP = 90f;
-    public static final float pos_kI = 0f;
+    public static final float pos_kI = 0.1f;
     public static final float pos_kD = 15f;
 
     // Inner velocity loop treated as torque-current driven integrator. Tuned for
@@ -91,14 +91,14 @@ public final class Constants {
     public static final float vel_kD = 0f;
 
     // Positions
-    public static final Angle homeAngle = Degrees.of(90);
-    public static final Angle topBoxAngle = Degrees.of(-20);
-    public static final Angle bottomBoxAngle = Degrees.of(-60);
-    public static final Angle reverseSoftLimitAngle = Rotations.of(-0.15);
-    public static final Angle forwardSoftLimitAngle = Rotations.of(0.16);
+    public static final Angle homeAngle = Rotations.of(-0.16);
+    public static final Angle topBoxAngle = Rotations.of(0.1);
+    public static final Angle bottomBoxAngle = Rotations.of(-0.1);
+    public static final Angle reverseSoftLimitAngle = Rotations.of(-0.1);
+    public static final Angle forwardSoftLimitAngle = Rotations.of(0.1);
 
     // Hardware Constants
-    public static final Angle encoderMagnetOffset = Rotations.of(-0.15);
+    public static final Angle encoderMagnetOffset = Rotations.of(-0.12);
     public static final float mechGearRatio = 8.0f;
     public static final AngularVelocity approximateMaxVelocity = RPM.of(5000 / mechGearRatio);
     public static final MomentOfInertia armMomentOfInertia = KilogramSquareMeters.of(0.0228579824); // Calculated from
