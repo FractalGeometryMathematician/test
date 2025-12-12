@@ -35,14 +35,14 @@ public class IntakeSubsystem extends SubsystemBase {
   
   private TalonFX leverMotor = new TalonFX( /*insert numer */ 1, "can");
   private CANdi limit = new CANdi(/*insert number */ 3);
-  private boolean autoOn = true;
+  private boolean autoOn = false;
   private final double upperLim = 3.5; //check movearm to change value, 50 is just exorbitantly large random number, but check signage here
   private double magnVel = 0.05; //to reverse direction, just change 1 to -1
   DoublePublisher pos;
   TalonFXConfiguration PID = new TalonFXConfiguration();
   NetworkTableInstance inst;
   NetworkTable table;
-  private final double downPos = -1.0; //lower limit, in case angle of lever is lower. will be stopped by the limit anyway
+  private final double downPos = 1.0; //lower limit, in case angle of lever is lower. will be stopped by the limit anyway
   private boolean up = false; //current direction of arm
   CurrentLimitsConfigs currLim;
   private PositionTorqueCurrentFOC focThing;
@@ -102,7 +102,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
   private void config(){
     PID.Slot0.kP = 3;                                                //fix these guys somehow
-    PID.Slot0.kI = 0.1;                                                // config motors
+    PID.Slot0.kI = 3;                                                // config motors
     // PID.Slot0.kV = 1;
     PID.Slot0.kD = 0.01;
     // PID.Slot0.kG = 0.02;
@@ -123,7 +123,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
     PID.MotionMagic.MotionMagicCruiseVelocity = 0.05;  // max speed (rotations/sec)
     PID.MotionMagic.MotionMagicAcceleration   = 1;  // how fast you ramp to that speed
-    PID.MotionMagic.MotionMagicJerk           = 0.0;
+    PID.MotionMagic.MotionMagicJerk           = 0.5;
     
     leverMotor.getConfigurator().apply(PID);
     focThing = new PositionTorqueCurrentFOC(0).withSlot(0); //sets FOC object with PID values
@@ -132,21 +132,28 @@ public class IntakeSubsystem extends SubsystemBase {
   
   }
 
+  boolean manualOn = false;
   public void manual(boolean left, boolean right){      // manual mode
     
      if(left && !right){                            //left pressed, go down
       leverMotor.set(-1*magnVel);
       up = false;
       holdPos = leverMotor.getPosition().getValueAsDouble();
+      manualOn = true;
       
     }else if((!left && right)){ 
       leverMotor.set(magnVel);
       up = true;
       holdPos = leverMotor.getPosition().getValueAsDouble();
+      manualOn = true;
       
     }else{                                          //none pressed, freeze. alternatively, if going up but above upperLim, also stop
+      if (manualOn == true){
       leverMotor.set(0);
+      manualOn = false;
       leverMotor.setControl(focThing.withPosition(holdPos));
+
+    }
       up = false;
 
     }
@@ -154,18 +161,8 @@ public class IntakeSubsystem extends SubsystemBase {
 
   public void autoSetIntake(boolean left, boolean right){   //auto mode
 
-    /* 
-    if(left && right){                                      //both pressed, freeze motor, go to auto mode
-      leverMotor.setControl(focThing.withPosition(leverMotor.getPosition().getValueAsDouble()));
-      autoOn = false;
-      up = false;
-      haltUntil = Timer.getFPGATimestamp() + 0.5;
-      return;
-    }
-      */
-
     if(left && !right ){                                    //left pressed, go to downPos
-        leverMotor.setControl(slo.withPosition(downPos));
+        leverMotor.setControl(focThing.withPosition(downPos));
         up = false;
         holdPos = downPos;
       
@@ -181,11 +178,11 @@ public class IntakeSubsystem extends SubsystemBase {
 
   public void moveArm(boolean left, boolean right){
 
-    // if(limit.getS1Closed().refresh().getValue() && up ){ //check is bool is true or false when pressed. will go up if lim pressed, but not down
-    //   leverMotor.setPosition(upperLim); 
-    //   // leverMotor.setControl(focThing.withPosition(upperLim));
-    //   // up = false;
-    // }
+    if(limit.getS1Closed().refresh().getValue() && up ){ //check is bool is true or false when pressed. will go up if lim pressed, but not down
+       leverMotor.setPosition(upperLim); 
+        leverMotor.setControl(focThing.withPosition(upperLim));
+       up = false;
+    }
 
     if(Timer.getFPGATimestamp() < haltUntil){
       return;
