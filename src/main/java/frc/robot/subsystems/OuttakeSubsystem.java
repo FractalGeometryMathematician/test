@@ -293,6 +293,8 @@ public class OuttakeSubsystem extends SubsystemBase {
       setVelocity = RPM.of(0);
     }
 
+    DataLogManager.log(setVelocity.toLongString());
+
     // Control motor with velocity PID
     motor.setControl(velRequest.withVelocity(setVelocity));
   }
@@ -318,7 +320,8 @@ public class OuttakeSubsystem extends SubsystemBase {
       setValue = 0;
     }
 
-    Voltage setVoltage = Volts.of(12 * setValue);
+    Voltage setVoltage = Volts.of(1.2 * setValue);
+    DataLogManager.log(setVoltage.toLongString());
 
     // Control motor voltage
     motor.setControl(voltageRequest.withOutput(setVoltage));
@@ -433,13 +436,15 @@ public class OuttakeSubsystem extends SubsystemBase {
   // one sets positive voltage
   public Command VoltageControl(DoubleSupplier negativeInput, DoubleSupplier positiveInput) {
     return this.run(() -> {
+
       // divides by ten to decrease max speed
-      double positiveValue = positiveInput.getAsDouble() / 10;
-      double negativeValue = negativeInput.getAsDouble() / 10;
+      double positiveValue = positiveInput.getAsDouble();
+      double negativeValue = negativeInput.getAsDouble();
       // Squares the two inputs to make the lower values more sensitive and combines
       // the two values
       double shapedInput = ((positiveValue * positiveValue) - (negativeValue * negativeValue)); // bad name wth
 
+      DataLogManager.log(shapedInput + " %");
       // sets the desired voltage of the motor
       setVoltage(shapedInput);
     });
