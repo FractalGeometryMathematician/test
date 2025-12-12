@@ -13,12 +13,10 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.hardware.CANdi;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.*;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Timer;
@@ -27,7 +25,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import static edu.wpi.first.units.Units.*;
 
 import java.security.Timestamp;
-import java.util.EnumSet;
 import java.util.EnumSet;
 
 
@@ -39,15 +36,12 @@ public class IntakeSubsystem extends SubsystemBase {
   private TalonFX leverMotor = new TalonFX( /*insert numer */ 1, "can");
   private CANdi limit = new CANdi(/*insert number */ 3);
   private boolean autoOn = true;
-  private boolean autoOn = true;
   private final double upperLim = 3.5; //check movearm to change value, 50 is just exorbitantly large random number, but check signage here
-  private double magnVel = 0.05; //to reverse direction, just change 1 to -1
   private double magnVel = 0.05; //to reverse direction, just change 1 to -1
   DoublePublisher pos;
   TalonFXConfiguration PID = new TalonFXConfiguration();
   NetworkTableInstance inst;
   NetworkTable table;
-  private final double downPos = -1.0; //lower limit, in case angle of lever is lower. will be stopped by the limit anyway
   private final double downPos = -1.0; //lower limit, in case angle of lever is lower. will be stopped by the limit anyway
   private boolean up = false; //current direction of arm
   CurrentLimitsConfigs currLim;
