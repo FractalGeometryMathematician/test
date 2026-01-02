@@ -27,6 +27,11 @@ import static edu.wpi.first.units.Units.*;
 import java.security.Timestamp;
 import java.util.EnumSet;
 
+import edu.wpi.first.math.system.plant.*;
+import edu.wpi.first.wpilibj.simulation.*;
+import edu.wpi.first.wpilibj.RobotController;
+import com.ctre.phoenix6.sim.TalonFXSimState;
+
 
 //mutual vs braking mode
 
