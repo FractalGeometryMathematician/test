@@ -11,10 +11,20 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+
 
 
 public class RobotContainer {
   
+CommandGenericHID keyboard = new CommandGenericHID(0);
+
+// These button numbers are arbitrary; you can change them
+Trigger keyQ = keyboard.button(5); // pretend "L1"
+Trigger keyE = keyboard.button(6); // pretend "R1"
+
   private IntakeSubsystem intake = new IntakeSubsystem();
 
   private final CommandPS5Controller m_driverController = new CommandPS5Controller(0);
@@ -30,11 +40,20 @@ public class RobotContainer {
   
   private void configureBindings() {
 
-    intake.setDefaultCommand(new RunCommand(() -> {
-      this.l1 = m_driverController.L1().getAsBoolean(); // Left Y-axis for PS5 controller
-      this.r1 = m_driverController.R1().getAsBoolean();
-      intake.moveArm(l1, r1);
-    }, intake));
+    intake.setDefaultCommand(
+      new RunCommand(() -> {
+        boolean l1 =
+            m_driverController.L1().getAsBoolean()
+            || (RobotBase.isSimulation() && keyQ.getAsBoolean());
+    
+        boolean r1 =
+            m_driverController.R1().getAsBoolean()
+            || (RobotBase.isSimulation() && keyE.getAsBoolean());
+    
+            intake.moveArm(l1, r1);
+      }, intake)
+    );
+    
 
   }
 

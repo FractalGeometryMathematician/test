@@ -27,6 +27,12 @@ import static edu.wpi.first.units.Units.*;
 import java.security.Timestamp;
 import java.util.EnumSet;
 
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
+import com.ctre.phoenix6.sim.TalonFXSimState;
+
+
 
 
 
@@ -53,6 +59,56 @@ public class IntakeSubsystem extends SubsystemBase {
   private final double torqLim = 15;
   private MotionMagicTorqueCurrentFOC slo;
   private double holdPos;
+
+private static final double kGearRatio = 12.0;           // motor(rotor) rotations per arm rotation
+private static final double kArmLengthMeters = 0.3048;   // 1 foot
+private static final double kArmMassKg = 0.5;            // 500 grams
+private final double kMinAngleRad = 0.0;
+//upperLim setpoint (rotor rotations -> radians).
+private final double kMaxAngleRad = (upperLim / kGearRatio) * 2.0 * Math.PI;
+private final TalonFXSimState leverSim = leverMotor.getSimState();
+private final SingleJointedArmSim armSim = new SingleJointedArmSim(
+  DCMotor.getFalcon500(1), // change motor type
+    kGearRatio,
+    SingleJointedArmSim.estimateMOI(kArmLengthMeters, kArmMassKg),
+    kArmLengthMeters,
+    kMinAngleRad,
+    kMaxAngleRad,
+    true, // simulate gravity
+    (downPos / kGearRatio) * 2.0 * Math.PI // starting angle aligned to your downPos
+);
+
+private boolean simLimitPressed() {
+  // Pressed when near top stop; adjust margin (radians) if needed
+  return armSim.getAngleRads() >= (kMaxAngleRad - 0.03);
+}
+
+public void simulationPeriodic() {
+  // Provide battery voltage to CTRE sim
+  double battery = RobotController.getBatteryVoltage();
+  leverSim.setSupplyVoltage(battery);
+
+  // Voltage your code is commanding (works for set() and setControl())
+  double motorVolts = leverMotor.getMotorVoltage().getValueAsDouble();
+
+  // Step the physics model (20ms loop)
+  armSim.setInputVoltage(motorVolts);
+  armSim.update(0.02);
+
+  // Convert arm angle -> rotor rotations (so leverMotor.getPosition() behaves)
+  double armAngleRad = armSim.getAngleRads();
+  double armRotations = armAngleRad / (2.0 * Math.PI);
+  double rotorRotations = armRotations * kGearRatio;
+
+  // Convert arm angular velocity -> rotor rotations/sec
+  double armRadPerSec = armSim.getVelocityRadPerSec();
+  double armRotPerSec = armRadPerSec / (2.0 * Math.PI);
+  double rotorRotPerSec = armRotPerSec * kGearRatio;
+
+  // Write back into TalonFX simulated sensor signals
+  leverSim.setRawRotorPosition(rotorRotations);
+  leverSim.setRotorVelocity(rotorRotPerSec);
+}
 
   
   
